@@ -1,31 +1,30 @@
-// Importa le librerie di Solana
 use solana_program::{
     account_info::AccountInfo,
     entrypoint,
     entrypoint::ProgramResult,
-    msg,
     program_error::ProgramError,
     pubkey::Pubkey,
-    system_instruction,
     sysvar::{self, clock::Clock},
 };
+use std::io::Read;
 
 // Definisci il programma
 entrypoint!(process_instruction);
 
 // Definisci l'ID del programma
-solana_program::declare_id!("YourProgramID");
+solana_program::declare_id!("F9M23T99wqx9SNLFZsfnpWsc1G5wWFtTSQdew7xG4PwK");
 
 // Definisci la struttura dati per il voto
+#[derive(Debug, Default, PartialEq, Copy, Clone)]
 struct Vote {
     voter: Pubkey,
     candidate: u32,
 }
 
 // Definisci la struttura dati per l'elezione
+#[derive(Debug, Default, PartialEq, Clone)]
 struct Election {
     votes: Vec<Vote>,
-    // Altri campi per l'elezione possono essere aggiunti secondo necessità
 }
 
 // Funzione principale del programma
@@ -54,7 +53,7 @@ fn initialize_election(program_id: &Pubkey, accounts: &[AccountInfo]) -> Program
     }
 
     // Crea una nuova elezione vuota
-    let mut election_data = Election { votes: Vec::new() };
+    let election_data = Election { votes: Vec::new() };
 
     // Salva i dati dell'elezione nell'account
     election_data.serialize(&mut &mut election_account.data.borrow_mut()[..])?;
@@ -65,8 +64,8 @@ fn initialize_election(program_id: &Pubkey, accounts: &[AccountInfo]) -> Program
 // Funzione per registrare un voto
 fn vote(program_id: &Pubkey, accounts: &[AccountInfo], instruction_data: &[u8]) -> ProgramResult {
     // Assicurati di avere i permessi corretti
-    let accounts_iter = &mut accounts.iter();
-    let election_account = next_account_info(accounts_iter)?;
+    let mut accounts_iter = accounts.iter();
+    let election_account = next_account_info(&mut accounts_iter)?;
 
     // Verifica che l'account sia inizializzato
     if election_account.data.borrow().iter().all(|&x| x == 0) {
@@ -74,10 +73,10 @@ fn vote(program_id: &Pubkey, accounts: &[AccountInfo], instruction_data: &[u8]) 
     }
 
     // Deserializza i dati dell'elezione
-    let mut election_data = Election::deserialize(&election_account.data.borrow())?;
+    let election_data = Election::deserialize(&election_account.data.borrow())?;
 
     // Analizza i dati dell'istruzione per ottenere i dettagli del voto
-    let voter_pubkey = next_account_info(accounts_iter)?.key;
+    let voter_pubkey = next_account_info(&accounts_iter)?.key;
     let candidate_id = instruction_data[1] as u32; // Supponiamo che il secondo byte contenga l'ID del candidato
 
     // Verifica che l'elettore non abbia già votato
@@ -90,18 +89,26 @@ fn vote(program_id: &Pubkey, accounts: &[AccountInfo], instruction_data: &[u8]) 
         voter: *voter_pubkey,
         candidate: candidate_id,
     };
-    election_data.votes.push(new_vote);
+
+    // Crea una nuova elezione con il voto aggiunto
+    let mut new_election_data = Election {
+        votes: election_data.votes.clone(),
+    };
+    new_election_data.votes.push(new_vote);
 
     // Salva i dati aggiornati nell'account
-    election_data.serialize(&mut &mut election_account.data.borrow_mut()[..])?;
+    new_election_data.serialize(&mut &mut election_account.data.borrow_mut()[..])?;
+
+    // Ora puoi ottenere la chiave senza clonare
+    let voter_pubkey = election_account.key;
 
     Ok(())
 }
 
 // Funzione di utilità per ottenere l'account successivo nell'iteratore
-fn next_account_info<'a, 'b>(
-    iter: &'a mut std::slice::Iter<'b, AccountInfo>,
-) -> Result<&'b AccountInfo<'b>, ProgramError> {
+fn next_account_info<'a>(
+    iter: &'a mut std::slice::Iter<'a, AccountInfo<'a>>,
+) -> Result<&'a mut AccountInfo<'a>, ProgramError> {
     iter.next().ok_or(ProgramError::NotEnoughAccountKeys)
 }
 
@@ -113,13 +120,15 @@ impl Vote {
         Ok(())
     }
 
-    fn deserialize<R: std::io::Read>(reader: &mut R) -> std::io::Result<Self> {
+    fn deserialize(data: &[u8]) -> std::io::Result<Self> {
+        let mut reader = std::io::Cursor::new(data);
         let mut voter_bytes = [0u8; 32];
         reader.read_exact(&mut voter_bytes)?;
         let voter = Pubkey::new_from_array(voter_bytes);
 
         let mut candidate_bytes = [0u8; 4];
-        reader.read_exact(&mut candidate_bytes)?;
+        // Usa read al posto di read_exact
+        reader.read(&mut candidate_bytes)?;
         let candidate = u32::from_le_bytes(candidate_bytes);
 
         Ok(Vote { voter, candidate })
@@ -134,9 +143,10 @@ impl Election {
         Ok(())
     }
 
-    fn deserialize<R: std::io::Read>(reader: &mut R) -> std::io::Result<Self> {
+    fn deserialize(data: &[u8]) -> std::io::Result<Self> {
+        let mut reader = std::io::Cursor::new(data);
         let mut votes = Vec::new();
-        while let Ok(vote) = Vote::deserialize(reader) {
+        while let Ok(vote) = Vote::deserialize(&reader.get_ref()[reader.position() as usize..]) {
             votes.push(vote);
         }
         Ok(Election { votes })
