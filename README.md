@@ -34,7 +34,7 @@ To deploy ChainDemocracy program:
 ```sh
 solana program deploy target/deploy/chain_democracy.so
 ```
-Save the PublicKey and modify the main of all the scripts:
+Save the Program ID and modify the main of all the scripts:
 
 ```sh
 const chainDemocracyProgramId = new web3.PublicKey('*new Public Key*')
