@@ -35,7 +35,7 @@ const voteInstructionLayout = borsh.struct([
     
 ])
 
-async function sendTestMovieReview(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
+async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
     let buffer = Buffer.alloc(1000)
     const voteAccountName = 'Elettorali5'
     const start_date = '2023-11-09T15:00:00'
@@ -95,8 +95,8 @@ async function main() {
     
     const connection = new web3.Connection("http://127.0.0.1:8899")
     await airdropSolIfNeeded(signer, connection).then(async () => {
-        const movieProgramId = new web3.PublicKey('9a9etVfmxwiSjat1QZV2EZZyfqggpSNogh5yhYTqnnqE')
-        await sendTestMovieReview(signer, movieProgramId, connection)
+        const chainDemocracyProgramId = new web3.PublicKey('9a9etVfmxwiSjat1QZV2EZZyfqggpSNogh5yhYTqnnqE')
+        await sendTestElection(signer, chainDemocracyProgramId, connection)
     })
     
     
