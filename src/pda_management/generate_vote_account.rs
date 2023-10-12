@@ -1,6 +1,5 @@
 use chrono::{DateTime, Utc, NaiveDateTime};
 use solana_program::{
-    entrypoint,
     entrypoint::ProgramResult,
     pubkey::Pubkey,
     msg,
@@ -8,8 +7,8 @@ use solana_program::{
     system_instruction,
     program_error::ProgramError,
     sysvar::{rent::Rent, Sysvar},
-    program::{invoke_signed},
-    borsh::try_from_slice_unchecked, address_lookup_table::program,
+    program::invoke_signed,
+    borsh::try_from_slice_unchecked,
 };
 
 use crate::state::vote_account_state::VoteAccountState;
@@ -70,10 +69,12 @@ pub fn add_vote_account(
 
     msg!("PDA Created: {}",pda);
 
-    let is_initialized = initialize_vote_account(pda_account, name, formatted_start_date, formatted_end_date);
 
-    if is_initialized.is_ok() {
-       Ok(()) // generate_candidate_list_account::generate_candidate_list_account(program_id, accounts, first_name, last_name, name_vote_account);
+    let is_election_created = initialize_vote_account(pda_account, name, formatted_start_date, formatted_end_date);
+       
+   
+    if is_election_created.is_ok(){
+        return Ok(())
     } else {
         return Err(ProgramError::AccountBorrowFailed)
     }
@@ -127,7 +128,7 @@ pub fn try_update(
     // }
 
     msg!("Unpacking vote account...");
-    let mut account_data = try_from_slice_unchecked::<VoteAccountState>(&pda_account.data.borrow()).unwrap();
+    let mut account_data: VoteAccountState = try_from_slice_unchecked::<VoteAccountState>(&pda_account.data.borrow()).unwrap();
 
     let(pda, bump_seed) = Pubkey::find_program_address(
         &[program_id.as_ref(),name.as_bytes().as_ref()],
@@ -161,3 +162,36 @@ pub fn try_update(
     Ok(())
 
 }
+
+// pub fn add_candidate(
+//     program_id: &Pubkey,
+//     pda_account: &AccountInfo,
+//     election_name: String,
+//     candidate_first_name: String,
+//     candidate_last_name: String
+// ) -> ProgramResult {
+
+//     if pda_account.owner != program_id{
+//         return Err(ProgramError::IllegalOwner);
+//     }
+
+//     let(pda, bump_seed) = Pubkey::find_program_address(
+//         &[program_id.as_ref(),election_name.as_bytes().as_ref()],
+//          program_id
+//         );
+//     if pda != *pda_account.key {
+//         msg!("Invalid seeds for PDA");
+//         return Err(ProgramError::InvalidSeeds)
+//     }
+
+//     let mut account_data: VoteAccountState = try_from_slice_unchecked::<VoteAccountState>(&pda_account.data.borrow()).unwrap();
+
+//     if !account_data.is_initialized {
+//         msg!("Account not initialized")
+//         return Err(ProgramError::InvalidAccountData)
+//     }
+
+//     account_data.votes.
+
+//     Ok(())
+// }

@@ -12,14 +12,16 @@ use solana_program::{
 };
 
 
-use crate::{state::candidate_state::CandidateState};
+use crate::{state::candidate_state::CandidateState, pda_management::generate_candidate_list_account::add_candidate_to_candidate_list};
 use borsh::{BorshDeserialize, BorshSerialize};
 
 pub fn add_candidate(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     first_name: String,
-    last_name: String
+    last_name: String,
+    election_name: String,
+    seed: String
 ) -> ProgramResult {
 
     // Get Iterator
@@ -28,13 +30,22 @@ pub fn add_candidate(
     // Get accounts
     let initializer = next_account_info(account_info_iter)?;
     let pda_account = next_account_info(account_info_iter)?;
+    let pda_candidate_list = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
+
+    let candidate_first_name = first_name.clone();
+    let candidate_last_name = last_name.clone();
 
     // Derive PDA and check that it matches client
     let (pda, bump_seed) = Pubkey::find_program_address(
         &[initializer.key.as_ref(), first_name.as_bytes().as_ref(),last_name.as_bytes().as_ref()],
          program_id
         );
+    let(candidate_list_pda,c_bump_seed) = Pubkey::find_program_address(
+        &[program_id.as_ref(),election_name.as_bytes().as_ref(),seed.as_bytes().as_ref()],
+        program_id
+    );
+    
 
     // Calculate account size required
     let account_len: usize = 1 + (4 + first_name.len()) + (4 + last_name.len());
@@ -59,8 +70,16 @@ pub fn add_candidate(
 
     let is_initialized = intialize_candidate_account(pda_account,first_name,last_name);
 
+    //insert candidate into candidate_list
     if is_initialized.is_ok() {
-        Ok(())
+        let is_candidate_in_list = add_candidate_to_candidate_list(program_id, pda_candidate_list, &pda, election_name, candidate_first_name, candidate_last_name, seed);
+
+        if is_candidate_in_list.is_ok() {
+            return Ok(())
+        }
+        else {
+            return Err(ProgramError::AccountBorrowFailed) 
+        }
     } else {
         return Err(ProgramError::AccountBorrowFailed)
     }

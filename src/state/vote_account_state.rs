@@ -9,7 +9,7 @@ pub struct VoteAccountState {
     pub name: String,
     pub start_date: String,
     pub end_date: String,
-    votes: HashMap<Pubkey, Vec<Pubkey>>,
+    pub votes: HashMap<Pubkey, Vec<Pubkey>>,
     pub is_active: bool,
 }
 

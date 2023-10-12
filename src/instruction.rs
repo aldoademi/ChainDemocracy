@@ -7,7 +7,9 @@ pub enum ChainDemocracyInstruction {
         name: String,
         start_date: NaiveDateTime,
         end_date: NaiveDateTime
-
+    },
+    AddCandidateListAccount {
+        election_name: String
     },
     UpdateVoteAccount {
         name: String,
@@ -15,13 +17,17 @@ pub enum ChainDemocracyInstruction {
     AddCandidate {
         first_name: String,
         last_name: String,
+        election_name: String,
+        seed: String
     }
 }
 
 #[derive(BorshDeserialize)]
 struct AddCandidatePayload {
     first_name: String,
-    last_name: String
+    last_name: String,
+    election_name: String,
+    seed: String,
 }
 #[derive(BorshDeserialize)]
 struct  AddVoteAccountPayload{
@@ -33,6 +39,10 @@ struct  AddVoteAccountPayload{
 #[derive(BorshDeserialize)]
 struct  UpdateVoteAccountPayload{
     name: String,
+}
+#[derive(BorshDeserialize)]
+struct  AddCandidateListAccountPayload{
+    election_name: String,
 }
 
 
@@ -51,21 +61,24 @@ impl ChainDemocracyInstruction {
 
                 Self::AddVoteAccount { name: payload.name, start_date: parsed_start_date, end_date: parsed_end_date }
             } 
-
             1 => {
-                let payload = UpdateVoteAccountPayload::try_from_slice(rest).unwrap();
-                Self::UpdateVoteAccount { name: payload.name }
-
+                let payload = AddCandidateListAccountPayload::try_from_slice(rest).unwrap();
+                Self::AddCandidateListAccount { election_name: payload.election_name }
 
             }
-
             2 => {
                 let payload = AddCandidatePayload::try_from_slice(rest).unwrap();
                 Self::AddCandidate{
                     first_name: payload.first_name,
-                    last_name: payload.last_name
+                    last_name: payload.last_name,
+                    election_name: payload.election_name,
+                    seed: payload.seed
                 }
-            },
+            }
+            3 => {
+                let payload = UpdateVoteAccountPayload::try_from_slice(rest).unwrap();
+                Self::UpdateVoteAccount { name: payload.name }
+            }
             _=> return Err(ProgramError::InvalidInstructionData)
         })
 

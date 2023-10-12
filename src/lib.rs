@@ -14,7 +14,7 @@ use solana_program::{
 pub mod instruction;
 use instruction::ChainDemocracyInstruction;
 pub mod pda_management;
-use pda_management::{generate_candidate_account, generate_vote_account};
+use pda_management::{generate_candidate_account, generate_vote_account, generate_candidate_list_account};
 pub mod state;
 use state::candidate_state;
 pub mod utilities;
@@ -34,13 +34,16 @@ pub fn process_instruction (
         ChainDemocracyInstruction::AddVoteAccount { name, start_date, end_date } => {
            generate_vote_account::add_vote_account(program_id, accounts, name, start_date, end_date) ;
         }
+        ChainDemocracyInstruction::AddCandidateListAccount { election_name } => {
+            generate_candidate_list_account::generate_candidate_list_account(program_id, accounts, election_name);
+        }
 
         ChainDemocracyInstruction::UpdateVoteAccount { name } => {
             generate_vote_account::try_update(program_id, accounts, name);
         }
 
-        ChainDemocracyInstruction::AddCandidate { first_name, last_name } => {
-            generate_candidate_account::add_candidate(program_id, accounts, first_name, last_name);
+        ChainDemocracyInstruction::AddCandidate { first_name, last_name, election_name, seed } => {
+            generate_candidate_account::add_candidate(program_id, accounts, first_name, last_name, election_name, seed);
         }
     }
     Ok(())
