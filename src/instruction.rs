@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc, NaiveDate, NaiveDateTime, TimeZone, format::Fixed, F
 use solana_program::program_error::ProgramError;
 
 pub enum ChainDemocracyInstruction {
-    AddVoteAccount{
+    AddElectionAccount{
         name: String,
         start_date: NaiveDateTime,
         end_date: NaiveDateTime
@@ -11,7 +11,7 @@ pub enum ChainDemocracyInstruction {
     AddCandidateListAccount {
         election_name: String
     },
-    UpdateVoteAccount {
+    UpdateElectionAccount {
         name: String,
     },
     AddCandidate {
@@ -30,14 +30,14 @@ struct AddCandidatePayload {
     seed: String,
 }
 #[derive(BorshDeserialize)]
-struct  AddVoteAccountPayload{
+struct  AddElectionAccountPayload{
     name: String,
     start_date: String,
     end_date: String
 }
 
 #[derive(BorshDeserialize)]
-struct  UpdateVoteAccountPayload{
+struct  UpdateElectionAccountPayload{
     name: String,
 }
 #[derive(BorshDeserialize)]
@@ -54,12 +54,12 @@ impl ChainDemocracyInstruction {
 
         Ok(match variant {
             0 => {
-                let payload = AddVoteAccountPayload::try_from_slice(rest).unwrap();
+                let payload = AddElectionAccountPayload::try_from_slice(rest).unwrap();
                 let parsed_start_date = NaiveDateTime::parse_from_str(&payload.start_date, "%Y-%m-%dT%H:%M:%S").unwrap();
             
                 let parsed_end_date = NaiveDateTime::parse_from_str(&payload.end_date, "%Y-%m-%dT%H:%M:%S").unwrap();
 
-                Self::AddVoteAccount { name: payload.name, start_date: parsed_start_date, end_date: parsed_end_date }
+                Self::AddElectionAccount { name: payload.name, start_date: parsed_start_date, end_date: parsed_end_date }
             } 
             1 => {
                 let payload = AddCandidateListAccountPayload::try_from_slice(rest).unwrap();
@@ -76,8 +76,8 @@ impl ChainDemocracyInstruction {
                 }
             }
             3 => {
-                let payload = UpdateVoteAccountPayload::try_from_slice(rest).unwrap();
-                Self::UpdateVoteAccount { name: payload.name }
+                let payload = UpdateElectionAccountPayload::try_from_slice(rest).unwrap();
+                Self::UpdateElectionAccount { name: payload.name }
             }
             _=> return Err(ProgramError::InvalidInstructionData)
         })

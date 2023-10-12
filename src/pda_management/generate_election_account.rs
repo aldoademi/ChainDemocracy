@@ -11,13 +11,13 @@ use solana_program::{
     borsh::try_from_slice_unchecked,
 };
 
-use crate::state::vote_account_state::VoteAccountState;
+use crate::state::election_account_state::ElectionAccountState;
 use borsh::{BorshDeserialize, BorshSerialize};
-use crate::utilities::vote_account_utilities;
+use crate::utilities::election_account_utilities;
 use crate::pda_management::generate_candidate_list_account;
 
 
-pub fn add_vote_account(
+pub fn add_election_account(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     name: String,
@@ -70,7 +70,7 @@ pub fn add_vote_account(
     msg!("PDA Created: {}",pda);
 
 
-    let is_election_created = initialize_vote_account(pda_account, name, formatted_start_date, formatted_end_date);
+    let is_election_created = initialize_election_account(pda_account, name, formatted_start_date, formatted_end_date);
        
    
     if is_election_created.is_ok(){
@@ -82,7 +82,7 @@ pub fn add_vote_account(
     
 }
 
-pub fn initialize_vote_account(
+pub fn initialize_election_account(
     pda_account: &AccountInfo,
     name: String,
     start_date: String,
@@ -90,7 +90,7 @@ pub fn initialize_vote_account(
 ) -> ProgramResult {
 
     msg!("Unpacking vote account");
-    let mut account_data = try_from_slice_unchecked::<VoteAccountState>(&pda_account.data.borrow()).unwrap();
+    let mut account_data = try_from_slice_unchecked::<ElectionAccountState>(&pda_account.data.borrow()).unwrap();
 
     account_data.name = name;
     account_data.start_date = start_date;
@@ -128,7 +128,7 @@ pub fn try_update(
     // }
 
     msg!("Unpacking vote account...");
-    let mut account_data: VoteAccountState = try_from_slice_unchecked::<VoteAccountState>(&pda_account.data.borrow()).unwrap();
+    let mut account_data: ElectionAccountState = try_from_slice_unchecked::<ElectionAccountState>(&pda_account.data.borrow()).unwrap();
 
     let(pda, bump_seed) = Pubkey::find_program_address(
         &[program_id.as_ref(),name.as_bytes().as_ref()],

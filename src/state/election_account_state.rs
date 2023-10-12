@@ -4,7 +4,7 @@ use borsh::{BorshSerialize, BorshDeserialize};
 use solana_program::pubkey::Pubkey;
 
 #[derive(BorshSerialize, BorshDeserialize)]
-pub struct VoteAccountState {
+pub struct ElectionAccountState {
     pub is_initialized: bool,
     pub name: String,
     pub start_date: String,
