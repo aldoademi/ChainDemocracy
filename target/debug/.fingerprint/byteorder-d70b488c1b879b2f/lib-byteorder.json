@@ -1,1 +1,0 @@
-{"rustc":16895609601713598366,"features":"[\"default\", \"i128\", \"std\"]","target":18335588937564793828,"profile":14473208297124147686,"path":12151713698140999542,"deps":[],"local":[{"CheckDepInfo":{"dep_info":"debug/.fingerprint/byteorder-d70b488c1b879b2f/dep-lib-byteorder"}}],"rustflags":[],"metadata":5398730104718078656,"config":2202906307356721367,"compile_kind":0}
