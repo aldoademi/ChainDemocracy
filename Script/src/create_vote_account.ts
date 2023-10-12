@@ -4,20 +4,6 @@ import * as fs from 'fs'
 import dotenv from 'dotenv'
 dotenv.config()
 
-function initializeSignerKeypair(): web3.Keypair {
-    if (!process.env.PRIVATE_KEY) {
-        console.log('Creating .env file')
-        const signer = web3.Keypair.generate()
-        fs.writeFileSync('.env',`PRIVATE_KEY=[${signer.secretKey.toString()}]`)
-        return signer
-    }
-    
-    const secret = JSON.parse(process.env.PRIVATE_KEY ?? "") as number[]
-    const secretKey = Uint8Array.from(secret)
-    const keypairFromSecretKey = web3.Keypair.fromSecretKey(secretKey)
-    return keypairFromSecretKey
-}
-
 async function airdropSolIfNeeded(signer: web3.Keypair, connection: web3.Connection) {
     const balance = await connection.getBalance(signer.publicKey)
     console.log('Current balance is', balance)
@@ -90,16 +76,19 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
     console.log(`https://explorer.solana.com/tx/${tx}?cluster=custom`)
 }
 
+function pausaPerSecondi(secondi: number): Promise<void> {
+    return new Promise((resolve) => {
+      setTimeout(resolve, secondi * 1000);
+    });
+}
+
 async function main() {
-    const signer = initializeSignerKeypair()
+    const signer =  web3.Keypair.generate()
     
     const connection = new web3.Connection("http://127.0.0.1:8899")
-    await airdropSolIfNeeded(signer, connection).then(async () => {
-        const chainDemocracyProgramId = new web3.PublicKey('9a9etVfmxwiSjat1QZV2EZZyfqggpSNogh5yhYTqnnqE')
-        await sendTestElection(signer, chainDemocracyProgramId, connection)
-    })
-    
-    
+    await airdropSolIfNeeded(signer, connection)
+
+    await pausaPerSecondi(15)
 }
 
 main().then(() => {
