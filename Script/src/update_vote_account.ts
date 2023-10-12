@@ -32,7 +32,7 @@ const updateVoteAccountLayout = borsh.struct([
     borsh.str('name'),
 ])
 
-async function sendTestMovieReview(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
+async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
     let buffer = Buffer.alloc(1000)
     const voteAccountName = 'Nazionali2023'
     updateVoteAccountLayout.encode(
@@ -88,8 +88,8 @@ async function main() {
     const connection = new web3.Connection("http://127.0.0.1:8899")
     await airdropSolIfNeeded(signer, connection)
     
-    const movieProgramId = new web3.PublicKey('9a9etVfmxwiSjat1QZV2EZZyfqggpSNogh5yhYTqnnqE')
-    await sendTestMovieReview(signer, movieProgramId, connection)
+    const chainDemocracyProgramId = new web3.PublicKey('9a9etVfmxwiSjat1QZV2EZZyfqggpSNogh5yhYTqnnqE')
+    await sendTestElection(signer, chainDemocracyProgramId, connection)
 }
 
 main().then(() => {

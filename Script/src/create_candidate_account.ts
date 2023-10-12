@@ -27,7 +27,7 @@ async function airdropSolIfNeeded(signer: web3.Keypair, connection: web3.Connect
     }
 }
 
-const movieInstructionLayout = borsh.struct([
+const electionInstructionLayout = borsh.struct([
     borsh.u8('variant'),
     borsh.str('first_name'),
     borsh.str('last_name'),
@@ -36,13 +36,13 @@ const movieInstructionLayout = borsh.struct([
     
 ])
 
-async function sendTestMovieReview(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
+async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
     let buffer = Buffer.alloc(1000)
     const first_name = 'Mario'
     const last_name = 'Giallo'
     const election_name = 'Elettorali5'
     const seed = 'candidate-list'
-    movieInstructionLayout.encode(
+    electionInstructionLayout.encode(
         {
             variant: 2,
             first_name: first_name,
@@ -53,7 +53,7 @@ async function sendTestMovieReview(signer: web3.Keypair, programId: web3.PublicK
         buffer
     )
 
-    buffer = buffer.slice(0, movieInstructionLayout.getSpan(buffer))
+    buffer = buffer.slice(0, electionInstructionLayout.getSpan(buffer))
 
 
     const [pda] = await web3.PublicKey.findProgramAddress(
@@ -108,8 +108,8 @@ async function main() {
     const connection = new web3.Connection("http://127.0.0.1:8899")
     // await airdropSolIfNeeded(signer, connection)
     
-    const movieProgramId = new web3.PublicKey('9a9etVfmxwiSjat1QZV2EZZyfqggpSNogh5yhYTqnnqE')
-    await sendTestMovieReview(signer, movieProgramId, connection)
+    const chainDemocracyProgramId = new web3.PublicKey('9a9etVfmxwiSjat1QZV2EZZyfqggpSNogh5yhYTqnnqE')
+    await sendTestElection(signer, chainDemocracyProgramId, connection)
 }
 
 main().then(() => {
