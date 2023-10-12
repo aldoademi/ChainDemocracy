@@ -1,7 +1,7 @@
 # ChainDemocracy
 
-ChainDemocracy is a decentralized application build on Solana blockchain using Rust.
-It aims to improve the modern e-voting system to prevent fraud into elections.
+ChainDemocracy is a decentralized application built on the Solana blockchain using Rust. 
+It aims to improve the modern e-voting system to prevent fraud in elections.
 
 ## Pre Requisites
 - Install the Local Development Environment using this site:
