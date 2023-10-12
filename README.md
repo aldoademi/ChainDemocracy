@@ -30,7 +30,7 @@ cargo build-bpf
 
 ## Test
 
-To deploy the program:
+To deploy ChainDemocracy program:
 ```sh
 solana program deploy target/deploy/chain_democracy.so
 ```
@@ -43,11 +43,11 @@ const chainDemocracyProgramId = new web3.PublicKey('*new Public Key*')
 To run the scripts:
 
 ```sh
+npm run newElectionAccount
+```
+```sh
+npm run createCandidateList
+```
+```sh
 npm run createCandidateAccount
-```
-```sh
-npm run newVoteAccount
-```
-```sh
-npm run updateVoteAccount
 ```

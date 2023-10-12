@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "createCandidateAccount": "ts-node src/create_candidate_account.ts",
-    "newVoteAccount": "ts-node src/create_vote_account.ts",
+    "newElectionAccount": "ts-node src/create_vote_account.ts",
     "updateVoteAccount": "ts-node src/update_vote_account.ts",
     "createCandidateList": "ts-node src/create_candidate_list_account",
     "test": "echo \"Error: no test specified\" && exit 1"
