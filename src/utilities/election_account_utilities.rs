@@ -44,3 +44,19 @@ pub fn check_time_election(
         return Err(ProgramError::InvalidInstructionData);
     }
 }
+
+pub fn check_time_registration(
+    start_date: NaiveDateTime,
+    end_date: NaiveDateTime
+) -> ProgramResult{
+    
+    //Creo data di oggi
+    let today = Utc::now();
+
+    // Verifico che le elezioni non siano ancora iniziate
+    if(start_date > today.unwrap()){
+        return Ok(());
+    }else{
+        return Err(ProgramError::InvalidInstructionData);
+    }
+}
