@@ -1,5 +1,5 @@
 use borsh::BorshDeserialize;
-use chrono::{DateTime, Utc, NaiveDate, NaiveDateTime, TimeZone, format::Fixed, FixedOffset};
+use chrono:: NaiveDateTime;
 use solana_program::program_error::ProgramError;
 
 pub enum ChainDemocracyInstruction {
@@ -17,6 +17,13 @@ pub enum ChainDemocracyInstruction {
     AddCandidate {
         first_name: String,
         last_name: String,
+        election_name: String,
+        seed: String
+    },
+    AddVote {
+        electoral_card_number: String,
+        candidate_first_name: String,
+        candidate_last_name: String,
         election_name: String,
         seed: String
     }
@@ -37,14 +44,17 @@ struct  AddElectionAccountPayload{
 }
 
 #[derive(BorshDeserialize)]
-struct  UpdateElectionAccountPayload{
-    name: String,
-}
-#[derive(BorshDeserialize)]
 struct  AddCandidateListAccountPayload{
     election_name: String,
 }
-
+#[derive(BorshDeserialize)]
+struct  AddVotePayload{
+    electoral_card_number: String,
+    candidate_first_name: String,
+    candidate_last_name: String,
+    election_name: String,
+    seed: String
+}
 
 impl ChainDemocracyInstruction {
 
@@ -76,8 +86,14 @@ impl ChainDemocracyInstruction {
                 }
             }
             3 => {
-                let payload = UpdateElectionAccountPayload::try_from_slice(rest).unwrap();
-                Self::UpdateElectionAccount { name: payload.name }
+                let payload = AddVotePayload::try_from_slice(rest).unwrap();
+                Self::AddVote { 
+                    electoral_card_number: payload.electoral_card_number,
+                    candidate_first_name: payload.candidate_first_name,
+                    candidate_last_name: payload.candidate_last_name,
+                    election_name: payload.election_name,
+                    seed: payload.seed
+                 } 
             }
             _=> return Err(ProgramError::InvalidInstructionData)
         })

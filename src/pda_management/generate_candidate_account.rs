@@ -1,5 +1,4 @@
 use solana_program::{
-    entrypoint,
     entrypoint::ProgramResult,
     pubkey::Pubkey,
     msg,
@@ -7,13 +6,12 @@ use solana_program::{
     system_instruction,
     program_error::ProgramError,
     sysvar::{rent::Rent, Sysvar},
-    program::{invoke_signed},
-    borsh::try_from_slice_unchecked, address_lookup_table::program,
+    program::invoke_signed,
+    borsh::try_from_slice_unchecked,
 };
 
-
 use crate::{state::candidate_state::CandidateState, pda_management::generate_candidate_list_account::add_candidate_to_candidate_list};
-use borsh::{BorshDeserialize, BorshSerialize};
+use borsh::BorshSerialize;
 
 pub fn add_candidate(
     program_id: &Pubkey,
@@ -24,10 +22,10 @@ pub fn add_candidate(
     seed: String
 ) -> ProgramResult {
 
-    // Get Iterator
+    // Crea iteratore su accounts[]
     let account_info_iter = &mut accounts.iter();
 
-    // Get accounts
+    // Recupero account forniti da client
     let initializer = next_account_info(account_info_iter)?;
     let pda_account = next_account_info(account_info_iter)?;
     let pda_candidate_list = next_account_info(account_info_iter)?;
@@ -36,7 +34,7 @@ pub fn add_candidate(
     let candidate_first_name = first_name.clone();
     let candidate_last_name = last_name.clone();
 
-    // Derive PDA and check that it matches client
+    // Deriva PDA (Ottiene pubKey e bump)
     let (pda, bump_seed) = Pubkey::find_program_address(
         &[initializer.key.as_ref(), first_name.as_bytes().as_ref(),last_name.as_bytes().as_ref()],
          program_id
@@ -47,14 +45,14 @@ pub fn add_candidate(
     );
     
 
-    // Calculate account size required
-    let account_len: usize = 1 + (4 + first_name.len()) + (4 + last_name.len());
+    // Calcola dimensione dell'account da creare
+    let account_len: usize = 1 + (4 * first_name.len()) + (4 * last_name.len());
 
-    // Calculate rent required
+    // Calcola rent
     let rent = Rent::get()?;
     let rent_lamports = rent.minimum_balance(account_len);
 
-    //Create account
+    //Crea account
     invoke_signed(
         &system_instruction::create_account(
             initializer.key,
@@ -68,10 +66,11 @@ pub fn add_candidate(
     )?;
     msg!("PDA Created: {}",pda);
 
+    //inserisco dati nell'account generato
     let is_initialized = intialize_candidate_account(pda_account,first_name,last_name);
 
-    //insert candidate into candidate_list
     if is_initialized.is_ok() {
+        //Inserisce candidato nella lista candidati
         let is_candidate_in_list = add_candidate_to_candidate_list(program_id, pda_candidate_list, &pda, election_name, candidate_first_name, candidate_last_name, seed);
 
         if is_candidate_in_list.is_ok() {
@@ -85,8 +84,6 @@ pub fn add_candidate(
     }
 
 }
-
-
 
 pub fn intialize_candidate_account (
     pda_account: &AccountInfo,
