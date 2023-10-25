@@ -12,7 +12,10 @@ use solana_program::{
 };
 
 use crate::state::election_account_state::ElectionAccountState;
+use crate::candidate_list_manager_account::generate_candidate_list_account;
+use crate::pda_management::result_manager_account::generate_result_account;
 use borsh::BorshSerialize;
+
 
 
 pub fn add_election_account(
@@ -27,19 +30,23 @@ pub fn add_election_account(
     let formatted_start_date = start_date.format("%Y-%m-%d %H:%M:%S").to_string();
     let formatted_end_date = end_date.format("%Y-%m-%d %H:%M:%S").to_string();
 
+    let electione_name = name.clone();
+    let election_name_for_result = name.clone();
+
     //Crea Iteratore su accounts[]
     let account_info_iter = &mut accounts.iter();
 
     //Prende gli account forniti dal client
     let initializer = next_account_info(account_info_iter)?;
-    let pda_account = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
+    let election_pda_account = next_account_info(account_info_iter)?;
+    
 
     //Deriva PDA
-    let (pda, bump_seed) = Pubkey::find_program_address(
+    let (election_pda, election_bump_seed) = Pubkey::find_program_address(
         &[program_id.as_ref(), name.as_bytes().as_ref()],
          program_id
-        );
+        );    
     
     //Calcola dimensione dell'account
     let account_len: usize = 1 +
@@ -56,23 +63,38 @@ pub fn add_election_account(
     invoke_signed(
         &system_instruction::create_account(
             initializer.key, 
-            pda_account.key, 
+            election_pda_account.key, 
             rent_lamports,
             account_len.try_into().unwrap(), 
             program_id
         ), 
-        &[initializer.clone(),pda_account.clone(),system_program.clone()], 
-        &[&[program_id.as_ref(),name.as_bytes().as_ref(), &[bump_seed]]]
+        &[initializer.clone(),election_pda_account.clone(),system_program.clone()], 
+        &[&[program_id.as_ref(),name.as_bytes().as_ref(), &[election_bump_seed]]]
     )?;
 
-    msg!("PDA Created: {}",pda);
+    msg!("PDA Created: {}",election_pda);
 
     //inizializza l'account
-    let is_election_created = initialize_election_account(pda_account, name, formatted_start_date, formatted_end_date);
+    let is_election_created = initialize_election_account(election_pda_account, name, formatted_start_date, formatted_end_date);
        
-   
     if is_election_created.is_ok(){
-        return Ok(())
+
+        let is_candidate_list_created = generate_candidate_list_account(program_id, accounts, electione_name);
+    
+        if is_candidate_list_created.is_ok() {
+            
+            let is_result_account_created = generate_result_account(program_id, accounts, election_name_for_result);
+
+            if is_result_account_created.is_ok() {
+                 Ok(())
+            }
+            else {
+                return Err(ProgramError::IncorrectProgramId);
+            }
+        }
+        else {
+            return Err(ProgramError::IncorrectProgramId)
+        }
     } else {
         return Err(ProgramError::AccountBorrowFailed)
     }
@@ -95,6 +117,7 @@ pub fn initialize_election_account(
     account_data.end_date = end_date;
     account_data.is_initialized = true;
     account_data.is_active = false;
+    account_data.number_of_votes = 0;
 
     msg!("Serializing account");
     account_data.serialize(&mut &mut pda_account.data.borrow_mut()[..])?;
@@ -132,9 +155,35 @@ pub fn add_vote(
             msg!("  {:?}", value);
         }
     }
+
+    account_data.number_of_votes +=1;
+
     msg!("Serializing account");
     account_data.serialize(&mut &mut pda_account.data.borrow_mut()[..])?;
     msg!("Vote account serialized");
 
     Ok(())
+}
+
+
+pub fn get_percentage_of_votes (
+    election_pda_account: &AccountInfo,
+    candidate_pda_address: Pubkey
+) -> Result<f64,ProgramError> {
+
+    msg!("Unpacking vote account...");
+    let mut account_data: ElectionAccountState = try_from_slice_unchecked::<ElectionAccountState>(&election_pda_account.data.borrow()).unwrap();
+    
+    let votes_for_candidate = account_data.votes.get(&candidate_pda_address);
+
+    match votes_for_candidate {
+        Some(votes) => {
+            let vec_len = votes.len() as i64;
+            let percentage = ((100/account_data.number_of_votes) * vec_len) as f64;
+            return Ok(percentage);
+        }
+        None => {
+            return Ok(0.0);
+        }
+    }
 }

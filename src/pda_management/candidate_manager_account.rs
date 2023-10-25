@@ -10,7 +10,7 @@ use solana_program::{
     borsh::try_from_slice_unchecked,
 };
 
-use crate::{state::candidate_state::CandidateState, pda_management::generate_candidate_list_account::add_candidate_to_candidate_list};
+use crate::{state::candidate_state::CandidateState, pda_management::candidate_list_manager_account::add_candidate_to_candidate_list};
 use borsh::BorshSerialize;
 
 pub fn add_candidate(
@@ -36,7 +36,7 @@ pub fn add_candidate(
 
     // Deriva PDA (Ottiene pubKey e bump)
     let (pda, bump_seed) = Pubkey::find_program_address(
-        &[initializer.key.as_ref(), first_name.as_bytes().as_ref(),last_name.as_bytes().as_ref()],
+        &[initializer.key.as_ref(),election_name.as_bytes().as_ref(), first_name.as_bytes().as_ref(),last_name.as_bytes().as_ref()],
          program_id
         );
     let(candidate_list_pda,c_bump_seed) = Pubkey::find_program_address(
@@ -62,7 +62,7 @@ pub fn add_candidate(
             program_id
         ),
         &[initializer.clone(),pda_account.clone(), system_program.clone()],
-        &[&[initializer.key.as_ref(), first_name.as_bytes().as_ref(), last_name.as_bytes().as_ref(), &[bump_seed]]],
+        &[&[initializer.key.as_ref(),election_name.as_bytes().as_ref(), first_name.as_bytes().as_ref(), last_name.as_bytes().as_ref(), &[bump_seed]]],
     )?;
     msg!("PDA Created: {}",pda);
 

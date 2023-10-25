@@ -10,6 +10,7 @@ pub struct ElectionAccountState {
     pub start_date: String,
     pub end_date: String,
     pub votes: HashMap<Pubkey, Vec<Pubkey>>,
+    pub number_of_votes: i64,
     pub is_active: bool,
 }
 

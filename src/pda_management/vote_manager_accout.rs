@@ -11,7 +11,7 @@ use solana_program::{
     borsh::try_from_slice_unchecked,
 };
 
-use crate::{state::voter_account_state::VoterAccountState, pda_management::{generate_candidate_list_account::retrieve_candidate_account, generate_election_account::add_vote}};
+use crate::{state::voter_account_state::VoterAccountState, pda_management::{candidate_list_manager_account::retrieve_candidate_account, election_manager_account::add_vote}};
 
 pub fn add_voter_account_and_vote (
     program_id: &Pubkey,
@@ -28,13 +28,13 @@ pub fn add_voter_account_and_vote (
     //Recupera account forniti da client
     let initializer = next_account_info(account_info_iter)?;
     let pda_account = next_account_info(account_info_iter)?;
-    let candidate_pda_account = next_account_info(account_info_iter)?;
+    let candidate_list_pda_account = next_account_info(account_info_iter)?;
     let election_pda_account = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
 
     //Deriva PDA
     let (pda, bump_seed) = Pubkey::find_program_address(
-        &[initializer.key.as_ref(), electoral_card_number.as_bytes().as_ref()],
+        &[program_id.as_ref(), election_name.as_bytes().as_ref(), electoral_card_number.as_bytes().as_ref()],
          program_id
         );
 
@@ -49,7 +49,7 @@ pub fn add_voter_account_and_vote (
         );
     
     //Verifiche che i PDA derivati hanno lo stesso indirizzo degli account forniti dal client
-    if candidate_pda != *candidate_pda_account.key || election_pda != *election_pda_account.key{
+    if candidate_pda != *candidate_list_pda_account.key || election_pda != *election_pda_account.key{
         msg!("Invalid seed for account");
         return Err(ProgramError::InvalidSeeds)
     }
@@ -71,7 +71,7 @@ pub fn add_voter_account_and_vote (
             program_id
         ),
         &[initializer.clone(),pda_account.clone(), system_program.clone()],
-        &[&[initializer.key.as_ref(),electoral_card_number.as_bytes().as_ref(), &[bump_seed]]],
+        &[&[program_id.as_ref(),election_name.as_bytes().as_ref(),electoral_card_number.as_bytes().as_ref(), &[bump_seed]]],
     )?;
 
     msg!("PDA Created: {}",pda);
@@ -81,7 +81,7 @@ pub fn add_voter_account_and_vote (
 
     if is_initialized.is_ok() {
         //recupera il candidato in candidate list, se lo trova (Ok) aggiunge voto nell'account elezione
-        match  retrieve_candidate_account( pda_account, candidate_first_name, candidate_last_name) {
+        match  retrieve_candidate_account( candidate_list_pda_account, candidate_first_name, candidate_last_name) {
             Ok(candidate_address) => {
                 let vote = add_vote(election_pda_account, candidate_address, &pda);
             }

@@ -26,6 +26,11 @@ pub enum ChainDemocracyInstruction {
         candidate_last_name: String,
         election_name: String,
         seed: String
+    },
+    CountingVotes {
+        election_name: String,
+        candidate_list_seed: String,
+        result_seed: String
     }
 }
 
@@ -44,10 +49,6 @@ struct  AddElectionAccountPayload{
 }
 
 #[derive(BorshDeserialize)]
-struct  AddCandidateListAccountPayload{
-    election_name: String,
-}
-#[derive(BorshDeserialize)]
 struct  AddVotePayload{
     electoral_card_number: String,
     candidate_first_name: String,
@@ -56,6 +57,12 @@ struct  AddVotePayload{
     seed: String
 }
 
+#[derive(BorshDeserialize)]
+struct  CountingVotesPayload{
+    election_name: String,
+    candidate_list_seed: String,
+    result_seed: String
+}
 impl ChainDemocracyInstruction {
 
     pub fn unpack(input: &[u8]) -> Result<Self,ProgramError> {
@@ -72,11 +79,6 @@ impl ChainDemocracyInstruction {
                 Self::AddElectionAccount { name: payload.name, start_date: parsed_start_date, end_date: parsed_end_date }
             } 
             1 => {
-                let payload = AddCandidateListAccountPayload::try_from_slice(rest).unwrap();
-                Self::AddCandidateListAccount { election_name: payload.election_name }
-
-            }
-            2 => {
                 let payload = AddCandidatePayload::try_from_slice(rest).unwrap();
                 Self::AddCandidate{
                     first_name: payload.first_name,
@@ -85,7 +87,7 @@ impl ChainDemocracyInstruction {
                     seed: payload.seed
                 }
             }
-            3 => {
+            2 => {
                 let payload = AddVotePayload::try_from_slice(rest).unwrap();
                 Self::AddVote { 
                     electoral_card_number: payload.electoral_card_number,
@@ -94,6 +96,14 @@ impl ChainDemocracyInstruction {
                     election_name: payload.election_name,
                     seed: payload.seed
                  } 
+            }
+            3 => {
+                let payload = CountingVotesPayload::try_from_slice(rest).unwrap();
+                Self::CountingVotes { 
+                    election_name: payload.election_name, 
+                    candidate_list_seed: payload.candidate_list_seed,
+                     result_seed: payload.result_seed 
+                    }
             }
             _=> return Err(ProgramError::InvalidInstructionData)
         })

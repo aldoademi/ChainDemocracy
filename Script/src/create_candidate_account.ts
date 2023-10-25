@@ -24,13 +24,13 @@ const electionInstructionLayout = borsh.struct([
 
 async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
     let buffer = Buffer.alloc(1000)
-    const first_name = 'Mario'
-    const last_name = 'Giallo'
-    const election_name = 'Elettorali5'
+    const first_name = 'Marco'
+    const last_name = 'Togni'
+    const election_name = 'Test1'
     const seed = 'candidate-list'
     electionInstructionLayout.encode(
         {
-            variant: 2,
+            variant: 1,
             first_name: first_name,
             last_name: last_name,
             election_name:election_name,
@@ -43,7 +43,7 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
 
 
     const [pda] = await web3.PublicKey.findProgramAddress(
-        [signer.publicKey.toBuffer(), Buffer.from(first_name),Buffer.from(last_name)],
+        [signer.publicKey.toBuffer(), Buffer.from(election_name), Buffer.from(first_name),Buffer.from(last_name)],
         programId
     )
 
@@ -102,7 +102,7 @@ async function main() {
 
     await pausaPerSecondi(15)
     
-    const chainDemocracyProgramId = new web3.PublicKey('9a9etVfmxwiSjat1QZV2EZZyfqggpSNogh5yhYTqnnqE')
+    const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')
     await sendTestElection(signer, chainDemocracyProgramId, connection)
 }
 

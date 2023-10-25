@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use solana_program::{
     entrypoint::ProgramResult,
     pubkey::Pubkey,
@@ -18,18 +20,20 @@ pub fn generate_candidate_list_account(
     accounts: &[AccountInfo],
     election_name: String
 ) -> ProgramResult{
-    // Crea iteratore su accounts[]
+
+    //Crea iteratore su accounts[]
     let account_info_iter = &mut accounts.iter();
 
     // Recupero account forniti da client
     let initializer = next_account_info(account_info_iter)?;
-    let pda_account = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
+    let _election_pda_account = next_account_info(account_info_iter)?;
+    let candidate_list_pda_account = next_account_info(account_info_iter)?;
 
     let seed = String::from("candidate-list");
 
      // Deriva PDA
-     let (pda, bump_seed) = Pubkey::find_program_address(
+     let (candidate_list_pda, candidate_list_bump_seed) = Pubkey::find_program_address(
         &[program_id.as_ref(), election_name.as_bytes().as_ref(),seed.as_bytes().as_ref()],
          program_id
         );
@@ -45,25 +49,25 @@ pub fn generate_candidate_list_account(
     invoke_signed(
         &system_instruction::create_account(
             initializer.key,
-            pda_account.key,
+            candidate_list_pda_account.key,
             rent_lamports,
             account_len.try_into().unwrap(),
             program_id
             ),
-        &[initializer.clone(),pda_account.clone(),system_program.clone()],
-        &[&[program_id.as_ref(),election_name.as_bytes().as_ref(),seed.as_bytes().as_ref(), &[bump_seed]]]
+        &[initializer.clone(),candidate_list_pda_account.clone(),system_program.clone()],
+        &[&[program_id.as_ref(),election_name.as_bytes().as_ref(),seed.as_bytes().as_ref(), &[candidate_list_bump_seed]]]
         )?;
 
-        msg!("PDA Created {}", pda);
+        msg!("PDA Created {}", candidate_list_pda);
 
         msg!("Unpacking candidate-list account");
-        let mut account_data = try_from_slice_unchecked::<CandidateListState>(&pda_account.data.borrow()).unwrap();
+        let mut account_data = try_from_slice_unchecked::<CandidateListState>(&candidate_list_pda_account.data.borrow()).unwrap();
         msg!("Borrowed account data");
 
         account_data.is_initialized = true;
 
         msg!("Serializing account");
-        account_data.serialize(&mut &mut pda_account.data.borrow_mut()[..])?;
+        account_data.serialize(&mut &mut candidate_list_pda_account.data.borrow_mut()[..])?;
         msg!("Account serialized");
         msg!("Candidate list created for {}", election_name);
     
@@ -110,7 +114,16 @@ pub fn add_candidate_to_candidate_list(
     account_data.candidate.insert(format!("{}{}", candidate_first_name,candidate_last_name), *address_candidate);
 
     let info = account_data.candidate.get(&format!("{}{}", candidate_first_name,candidate_last_name)).unwrap();
+
     msg!("New candidate {} with account {}", &format!("{}{}", candidate_first_name,candidate_last_name), info);
+
+    for(key, value) in account_data.candidate.clone(){
+        msg!("L'account di {} con chiave: {}",key,value);
+    }
+
+    msg!("Serializing account");
+    account_data.serialize(&mut &mut pda_account.data.borrow_mut()[..])?;
+    msg!("Account serialized");
 
     Ok(())
 }
@@ -123,8 +136,27 @@ pub fn retrieve_candidate_account<'a>(
 
     let account_data: CandidateListState = try_from_slice_unchecked::<CandidateListState>(&pda_account.data.borrow()).unwrap();
 
-    let candidate_address = account_data.candidate.get(&format!("{}{}",candidate_first_name,candidate_last_name)).ok_or(ProgramError::InvalidArgument)?;
+    //--------------------------------------------------------------------
+    for (key,value) in account_data.candidate.clone()  {
+        msg!("Account di {} con chiave {}",key,value)
+    }
+
+    msg!("Searching for {}{}",candidate_first_name,candidate_last_name);
+
+    //--------------------------------------------------------------------
+
+    let candidate_address = account_data.candidate.get(&format!("{}{}",candidate_first_name,candidate_last_name)).unwrap();
    
     let candidate_address_copy = *candidate_address;
-    Ok(candidate_address_copy)
+    return Ok(candidate_address_copy)
+}
+
+pub fn retrieve_candidate_list (
+    candidate_list_pda_account: &AccountInfo,
+) -> Result<HashMap<String,Pubkey>, ProgramError> {
+
+    let account_data = try_from_slice_unchecked::<CandidateListState>(&candidate_list_pda_account.data.borrow()).unwrap();
+    let candidate_list_copy = account_data.candidate.clone();
+
+    return Ok(candidate_list_copy)
 }

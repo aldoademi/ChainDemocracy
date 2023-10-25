@@ -9,7 +9,7 @@ use solana_program::{
 pub mod instruction;
 use instruction::ChainDemocracyInstruction;
 pub mod pda_management;
-use pda_management::{generate_candidate_account, generate_election_account, generate_candidate_list_account, vote_manager_accout::add_voter_account_and_vote};
+use pda_management::{candidate_manager_account, election_manager_account, candidate_list_manager_account, vote_manager_accout::add_voter_account_and_vote, result_manager_account::counting_votes};
 pub mod state;
 pub mod utilities;
 
@@ -25,23 +25,25 @@ pub fn process_instruction (
     let instruction = ChainDemocracyInstruction::unpack(data_instructions)?;
 
     match instruction {
+        //CREA ACCOUNT ELEZIONE, LISTA CANDIDATI E RISULTATI
         ChainDemocracyInstruction::AddElectionAccount { name, start_date, end_date } => {
-           generate_election_account::add_election_account(program_id, accounts, name, start_date, end_date) ;
+           election_manager_account::add_election_account(program_id, accounts, name, start_date, end_date) ;
         }
-        ChainDemocracyInstruction::AddCandidateListAccount { election_name } => {
-            generate_candidate_list_account::generate_candidate_list_account(program_id, accounts, election_name);
-        }
-
-        ChainDemocracyInstruction::AddVote { electoral_card_number,candidate_first_name, candidate_last_name ,election_name,seed} => {
-            add_voter_account_and_vote(program_id, accounts, electoral_card_number, candidate_first_name, candidate_last_name, election_name, seed);
-            
-        }
-
+        //CREA ACCOUNT CANDIDATO
         ChainDemocracyInstruction::AddCandidate { first_name, last_name, election_name, seed } => {
-            generate_candidate_account::add_candidate(program_id, accounts, first_name, last_name, election_name, seed);
+            candidate_manager_account::add_candidate(program_id, accounts, first_name, last_name, election_name, seed);
+        }
+        //CREA ACCOUNT VOTANTE E REGISTRA IL VOTO NELL'ACCOUNT ELEZIONE 
+        ChainDemocracyInstruction::AddVote { electoral_card_number,candidate_first_name, candidate_last_name ,election_name,seed} => {
+            add_voter_account_and_vote(program_id, accounts, electoral_card_number, candidate_first_name, candidate_last_name, election_name, seed);  
+        }
+        //POPOLA L'ACCOUNT RISULTATI CON I RISULTATI DEI VOTI 
+        ChainDemocracyInstruction::CountingVotes { election_name, candidate_list_seed, result_seed } => {
+            counting_votes(program_id, accounts, election_name, candidate_list_seed, result_seed);
         }
         _=> return  Err(ProgramError::InvalidAccountData)
     }
     Ok(())
 }
+
 

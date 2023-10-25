@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "createCandidateAccount": "ts-node src/create_candidate_account.ts",
-    "newElectionAccount": "ts-node src/create_vote_account.ts",
-    "updateVoteAccount": "ts-node src/update_vote_account.ts",
-    "createCandidateList": "ts-node src/create_candidate_list_account",
+    "addCandidate": "ts-node src/create_candidate_account.ts",
+    "newElection": "ts-node src/create_election_account.ts",
+    "vote": "ts-node src/vote.ts",
+    "countingVotes": "ts-node src/counting_votes.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

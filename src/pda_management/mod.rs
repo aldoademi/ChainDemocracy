@@ -1,4 +1,5 @@
-pub mod generate_candidate_account;
-pub mod generate_election_account;
-pub mod generate_candidate_list_account;
+pub mod candidate_manager_account;
+pub mod election_manager_account;
+pub mod candidate_list_manager_account;
 pub mod vote_manager_accout;
+pub mod result_manager_account;
