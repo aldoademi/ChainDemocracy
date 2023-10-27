@@ -107,7 +107,7 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
 
     transaction.add(instruction)
     const tx = await web3.sendAndConfirmTransaction(connection, transaction, [signer])
-    console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
+    console.log(`https://explorer.solana.com/tx/${tx}?cluster=custom`)
 }
 
 function pausaPerSecondi(secondi: number): Promise<void> {
@@ -119,7 +119,7 @@ function pausaPerSecondi(secondi: number): Promise<void> {
 async function main() {
     // const signer =  web3.Keypair.generate()
     
-    // const connection = new web3.Connection("http://127.0.0.1:8899")
+    const connection = new web3.Connection("http://127.0.0.1:8899")
     // await airdropSolIfNeeded(signer, connection)
 
     // await pausaPerSecondi(20)
@@ -136,16 +136,16 @@ async function main() {
 
     // getResults(result_pda,connection)
 
-    // const signer =  web3.Keypair.generate()
+    const signer =  web3.Keypair.generate()
     
-    const signer = initializeSignerKeypair()
+    // const signer = initializeSignerKeypair()
 
-    let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
-    // await airdropSolIfNeeded(signer, connection)
+    // let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
+    await airdropSolIfNeeded(signer, connection)
 
-    // await pausaPerSecondi(20)
+    await pausaPerSecondi(20)
     
-    const chainDemocracyProgramId = new web3.PublicKey('4ViuBVhMASkeaX8RHc3gDQsBEmFdDKcXbCPXKoeWRxAa')
+    const chainDemocracyProgramId = new web3.PublicKey('DRY5UyCLRJLRmXs9R1Ko4iTvZHMdKWFgycMGAxeBAxmo')
     await sendTestElection(signer, chainDemocracyProgramId, connection)
 }
 

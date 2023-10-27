@@ -53,7 +53,8 @@ pub fn add_election_account(
      (4 * name.len()) + 
      (4 * formatted_start_date.len()) +
      (4 * formatted_end_date.len()) +
-     6 * (32 + 32 * 10);
+     10000;
+    //  6 * (32 + 32 * 10);
 
     //calcola il costo di rent
     let rent = Rent::get()?;
@@ -186,4 +187,16 @@ pub fn get_percentage_of_votes (
             return Ok(0.0);
         }
     }
+}
+
+pub fn get_number_of_votes (
+    election_pda_account: &AccountInfo,
+) -> Result<i64,ProgramError> {
+
+    msg!("Unpacking vote account...");
+    let mut account_data: ElectionAccountState = try_from_slice_unchecked::<ElectionAccountState>(&election_pda_account.data.borrow()).unwrap();
+    
+    let number_of_votes = account_data.number_of_votes;
+
+    return Ok(number_of_votes)
 }

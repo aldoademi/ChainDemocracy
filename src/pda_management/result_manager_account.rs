@@ -13,7 +13,7 @@ use solana_program::{
 use borsh::BorshSerialize;
 use crate::{candidate_list_manager_account::retrieve_candidate_list, state::result_state::ResultState};
 
-use super::election_manager_account::get_percentage_of_votes;
+use super::election_manager_account::{get_percentage_of_votes, get_number_of_votes};
 
 pub fn generate_result_account (
     program_id: &Pubkey,
@@ -104,6 +104,9 @@ pub fn counting_votes(
         let _ = add_result(result_pda_account, candidate_info, percentage_for_candidate);
     }
 
+    let number_of_votes = get_number_of_votes(election_pda_account)?;
+    add_number_of_votes(result_pda_account, number_of_votes);
+
     show_result(result_pda_account);
 
     
@@ -128,8 +131,25 @@ pub fn add_result (
     Ok(())
 }
 
+pub fn add_number_of_votes (
+    result_pda_account: &AccountInfo,
+    number_of_votes: i64
+) -> ProgramResult {
+
+    msg!("Unpacking vote account...");
+    let mut account_data: ResultState = try_from_slice_unchecked::<ResultState>(&result_pda_account.data.borrow()).unwrap();
+
+    account_data.number_of_votes = number_of_votes;
+
+    msg!("Serializing account");
+    account_data.serialize(&mut &mut result_pda_account.data.borrow_mut()[..])?;
+    msg!("Account serialized");
+
+    Ok(())
+}
+
 pub fn show_result(
-    result_pda_account: &AccountInfo
+    result_pda_account: &AccountInfo,
 ) -> ProgramResult {
    
     let mut account_data: ResultState = try_from_slice_unchecked::<ResultState>(&result_pda_account.data.borrow()).unwrap();
@@ -137,6 +157,10 @@ pub fn show_result(
     for (key,value) in account_data.results.clone()  {
         msg!("Il Candidato {} ha ricevuto {}% dei voto", key,value)
     }
+
+    msg!("Numero voti totali: {}", account_data.number_of_votes);
+
+    
 
     Ok(())
 }

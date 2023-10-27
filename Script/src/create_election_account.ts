@@ -24,7 +24,7 @@ async function airdropSolIfNeeded(signer: web3.Keypair, connection: web3.Connect
     console.log('Current balance is', balance)
     if (balance < web3.LAMPORTS_PER_SOL) {
         console.log('Airdropping 1 SOL...')
-        await connection.requestAirdrop(signer.publicKey, web3.LAMPORTS_PER_SOL)
+        await connection.requestAirdrop(signer.publicKey, web3.LAMPORTS_PER_SOL*10)
     }
 }
 
@@ -109,7 +109,7 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
 
     transaction.add(instruction)
     const tx = await web3.sendAndConfirmTransaction(connection, transaction, [signer])
-    console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
+    console.log(`https://explorer.solana.com/tx/${tx}?cluster=custom`)
 }
 
 function pausaPerSecondi(secondi: number): Promise<void> {
@@ -119,15 +119,15 @@ function pausaPerSecondi(secondi: number): Promise<void> {
 }
 
 async function main() {
-    // const signer =  web3.Keypair.generate()
-    const signer = initializeSignerKeypair()
+    const signer =  web3.Keypair.generate()
+    // const signer = initializeSignerKeypair()
     // const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')        // DAVIDE
-    const chainDemocracyProgramId = new web3.PublicKey('4ViuBVhMASkeaX8RHc3gDQsBEmFdDKcXbCPXKoeWRxAa')          // ALDO
-    let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
-    // const connection = new web3.Connection("http://127.0.0.1:8899")
-    // await airdropSolIfNeeded(signer, connection)
+    const chainDemocracyProgramId = new web3.PublicKey('DRY5UyCLRJLRmXs9R1Ko4iTvZHMdKWFgycMGAxeBAxmo')          // ALDO
+    // let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
+    const connection = new web3.Connection("http://127.0.0.1:8899")
+    await airdropSolIfNeeded(signer, connection)
 
-    // await pausaPerSecondi(15)
+    await pausaPerSecondi(15)
     
     await sendTestElection(signer, chainDemocracyProgramId, connection)
 }
