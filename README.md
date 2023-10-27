@@ -30,7 +30,14 @@ cargo build-bpf
 
 ## Test
 
-To deploy ChainDemocracy program:
+### To deploy ChainDemocracy program:
+First of all open the CLI and write:
+
+```sh
+solana-test-validator
+```
+and then open another CLI and write:
+
 ```sh
 solana program deploy target/deploy/chain_democracy.so
 ```
@@ -40,14 +47,21 @@ Save the Program ID and modify the main of all the scripts:
 const chainDemocracyProgramId = new web3.PublicKey('*new Public Key*')
 ```
 
-To run the scripts:
+### To run the scripts:
+
+Go into the directory of the scripts:
 
 ```sh
-npm run newElectionAccount
+cd Script/src
+```
+and then run the script in this order:
+
+```sh
+npm run newElection
 ```
 ```sh
-npm run createCandidateList
+npm run addCandidate
 ```
 ```sh
-npm run createCandidateAccount
+npm run vote
 ```
