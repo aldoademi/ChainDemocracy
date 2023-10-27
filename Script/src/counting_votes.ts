@@ -4,6 +4,21 @@ import * as fs from 'fs'
 import dotenv from 'dotenv'
 dotenv.config()
 
+function initializeSignerKeypair(): web3.Keypair {
+    if (!process.env.PRIVATE_KEY) {
+        console.log('Creating .env file')
+        const signer = web3.Keypair.generate()
+        fs.writeFileSync('.env',`PRIVATE_KEY=[${signer.secretKey.toString()}]`)
+        return signer
+    }
+    
+    const secret = JSON.parse(process.env.PRIVATE_KEY ?? "") as number[]
+    const secretKey = Uint8Array.from(secret)
+    const keypairFromSecretKey = web3.Keypair.fromSecretKey(secretKey)
+    console.log('Signer public key:', keypairFromSecretKey.publicKey.toBase58())
+    return keypairFromSecretKey
+}
+
 async function airdropSolIfNeeded(signer: web3.Keypair, connection: web3.Connection) {
     const balance = await connection.getBalance(signer.publicKey)
     console.log('Current balance is', balance)
@@ -92,7 +107,7 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
 
     transaction.add(instruction)
     const tx = await web3.sendAndConfirmTransaction(connection, transaction, [signer])
-    console.log(`https://explorer.solana.com/tx/${tx}?cluster=custom`)
+    console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
 }
 
 function pausaPerSecondi(secondi: number): Promise<void> {
@@ -102,23 +117,36 @@ function pausaPerSecondi(secondi: number): Promise<void> {
 }
 
 async function main() {
-    const signer =  web3.Keypair.generate()
+    // const signer =  web3.Keypair.generate()
     
-    const connection = new web3.Connection("http://127.0.0.1:8899")
+    // const connection = new web3.Connection("http://127.0.0.1:8899")
     // await airdropSolIfNeeded(signer, connection)
 
     // await pausaPerSecondi(20)
     
-    const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')
+    // // const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')        // DAVIDE
+    // const chainDemocracyProgramId = new web3.PublicKey('BbVtcrJ2UFC2N2yfBj6BxVEwgyqygyiBGFnDMC19mZqj')          // ALDO
     // await sendTestElection(signer, chainDemocracyProgramId, connection)
 
 
-    const[result_pda] = await web3.PublicKey.findProgramAddress(
-        [chainDemocracyProgramId.toBuffer(), Buffer.from('Test1'), Buffer.from('result')],
-        chainDemocracyProgramId
-    )
+    // const[result_pda] = await web3.PublicKey.findProgramAddress(
+    //     [chainDemocracyProgramId.toBuffer(), Buffer.from('Test1'), Buffer.from('result')],
+    //     chainDemocracyProgramId
+    // )
 
-    getResults(result_pda,connection)
+    // getResults(result_pda,connection)
+
+    // const signer =  web3.Keypair.generate()
+    
+    const signer = initializeSignerKeypair()
+
+    let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
+    // await airdropSolIfNeeded(signer, connection)
+
+    // await pausaPerSecondi(20)
+    
+    const chainDemocracyProgramId = new web3.PublicKey('4ViuBVhMASkeaX8RHc3gDQsBEmFdDKcXbCPXKoeWRxAa')
+    await sendTestElection(signer, chainDemocracyProgramId, connection)
 }
 
 main().then(() => {
@@ -131,17 +159,17 @@ main().then(() => {
 
 //------------------
 
-const ResultData = borsh.struct([
-    borsh.map(borsh.i32, borsh.f64,'result')
-])
+// const ResultData = borsh.struct([
+//     borsh.map(borsh.i32, borsh.f64,'result')
+// ])
 
-async function getResults(result_pda_address: web3.PublicKey, connection: web3.Connection) {
-    const result_pda_account = await connection.getAccountInfo(result_pda_address)
+// async function getResults(result_pda_address: web3.PublicKey, connection: web3.Connection) {
+//     const result_pda_account = await connection.getAccountInfo(result_pda_address)
 
-    if(result_pda_account) {
-        const decodedResult = ResultData.decode(result_pda_account)
+//     if(result_pda_account) {
+//         const decodedResult = ResultData.decode(result_pda_account)
 
-        console.log(decodedResult.result)
+//         console.log(decodedResult.result)
 
-    }
-}
+//     }
+// }

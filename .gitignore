@@ -1,1 +1,3 @@
 target/
+Script/node_modules/
+Script/src/test-ledger/

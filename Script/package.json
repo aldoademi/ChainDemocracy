@@ -8,6 +8,7 @@
     "newElection": "ts-node src/create_election_account.ts",
     "vote": "ts-node src/vote.ts",
     "countingVotes": "ts-node src/counting_votes.ts",
+    "testScalability": "ts-node src/simulate_scalability.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

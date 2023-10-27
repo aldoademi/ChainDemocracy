@@ -82,7 +82,9 @@ async function main() {
 
     await pausaPerSecondi(15)
     
-    const chainDemocracyProgramId = new web3.PublicKey('9a9etVfmxwiSjat1QZV2EZZyfqggpSNogh5yhYTqnnqE')
+    // const chainDemocracyProgramId = new web3.PublicKey('9a9etVfmxwiSjat1QZV2EZZyfqggpSNogh5yhYTqnnqE')       // DAVIDE
+    // const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')        // DAVIDE
+    const chainDemocracyProgramId = new web3.PublicKey('8Y4BdSZcoQGp7U1UKqpxjZh8ar7DN2xsMehETFKUvej8')          // ALDO
     await sendTestElection(signer, chainDemocracyProgramId, connection)
 }
 

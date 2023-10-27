@@ -4,6 +4,21 @@ import * as fs from 'fs'
 import dotenv from 'dotenv'
 dotenv.config()
 
+function initializeSignerKeypair(): web3.Keypair {
+    if (!process.env.PRIVATE_KEY) {
+        console.log('Creating .env file')
+        const signer = web3.Keypair.generate()
+        fs.writeFileSync('.env',`PRIVATE_KEY=[${signer.secretKey.toString()}]`)
+        return signer
+    }
+    
+    const secret = JSON.parse(process.env.PRIVATE_KEY ?? "") as number[]
+    const secretKey = Uint8Array.from(secret)
+    const keypairFromSecretKey = web3.Keypair.fromSecretKey(secretKey)
+    console.log('Signer public key:', keypairFromSecretKey.publicKey.toBase58())
+    return keypairFromSecretKey
+}
+
 async function airdropSolIfNeeded(signer: web3.Keypair, connection: web3.Connection) {
     const balance = await connection.getBalance(signer.publicKey)
     console.log('Current balance is', balance)
@@ -27,7 +42,7 @@ const electionInstructionLayout = borsh.struct([
 
 async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
     let buffer = Buffer.alloc(1000)
-    const electoral_card_number = 'EC8342'
+    const electoral_card_number = 'EC8352'
     const first_name = 'Marco'
     const last_name = 'Togni'
     const election_name = 'Test1'
@@ -100,7 +115,8 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
 
     transaction.add(instruction)
     const tx = await web3.sendAndConfirmTransaction(connection, transaction, [signer])
-    console.log(`https://explorer.solana.com/tx/${tx}?cluster=custom`)
+    // console.log(`https://explorer.solana.com/tx/${tx}?cluster=custom`)
+    console.log(`Transaction: https://explorer.solana.com/tx/${tx}?cluster=devnet`);
 }
 
 function pausaPerSecondi(secondi: number): Promise<void> {
@@ -112,14 +128,17 @@ function pausaPerSecondi(secondi: number): Promise<void> {
 
 
 async function main() {
-    const signer =  web3.Keypair.generate()
+    // const signer =  web3.Keypair.generate()
+    const signer = initializeSignerKeypair()
     
-    const connection = new web3.Connection("http://127.0.0.1:8899")
-    await airdropSolIfNeeded(signer, connection)
+    // const connection = new web3.Connection("http://127.0.0.1:8899")
+    let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
+    // await airdropSolIfNeeded(signer, connection)
 
-    await pausaPerSecondi(15)
+    // await pausaPerSecondi(15)
     
-    const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')
+    // const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')        // DAVIDE
+    const chainDemocracyProgramId = new web3.PublicKey('4ViuBVhMASkeaX8RHc3gDQsBEmFdDKcXbCPXKoeWRxAa')          // ALDO
     await sendTestElection(signer, chainDemocracyProgramId, connection)
 
 }
