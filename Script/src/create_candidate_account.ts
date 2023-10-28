@@ -23,8 +23,8 @@ async function airdropSolIfNeeded(signer: web3.Keypair, connection: web3.Connect
     const balance = await connection.getBalance(signer.publicKey)
     console.log('Current balance is', balance)
     if (balance < web3.LAMPORTS_PER_SOL) {
-        console.log('Airdropping 1 SOL...')
-        await connection.requestAirdrop(signer.publicKey, web3.LAMPORTS_PER_SOL*2)
+        console.log('Airdropping 2 SOL...')
+        await connection.requestAirdrop(signer.publicKey, web3.LAMPORTS_PER_SOL * 1)
     }
 }
 
@@ -37,11 +37,11 @@ const electionInstructionLayout = borsh.struct([
     
 ])
 
-async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
+async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection, firstName: string, lastName: string ){
     let buffer = Buffer.alloc(1000)
-    const first_name = 'Marco'
-    const last_name = 'Togni'
-    const election_name = 'Test1'
+    const first_name = firstName
+    const last_name = lastName
+    const election_name = 'Finale1'
     const seed = 'candidate-list'
     electionInstructionLayout.encode(
         {
@@ -67,6 +67,11 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
         programId
     )
 
+    const[election_pda_account] = await web3.PublicKey.findProgramAddress(
+        [programId.toBuffer(), Buffer.from(election_name)],
+        programId
+    )
+
     console.log("PDA is:", pda.toBase58())
 
     const transaction = new web3.Transaction()
@@ -87,6 +92,11 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
             },
             {
                 pubkey: pda_candidate_list,
+                isSigner: false,
+                isWritable: true
+            },
+            {
+                pubkey: election_pda_account,
                 isSigner: false,
                 isWritable: true
             },
@@ -117,11 +127,16 @@ async function main() {
     // let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
     await airdropSolIfNeeded(signer, connection)
 
-    await pausaPerSecondi(20)
+    await pausaPerSecondi(15)
     
     // const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')        // DAVIDE
-    const chainDemocracyProgramId = new web3.PublicKey('DRY5UyCLRJLRmXs9R1Ko4iTvZHMdKWFgycMGAxeBAxmo')          // ALDO
-    await sendTestElection(signer, chainDemocracyProgramId, connection)
+    const chainDemocracyProgramId = new web3.PublicKey('D8uNF3ywq7MrXYTosYrcgogARSfT3k7iENs9xVYV1Uij')          // ALDO
+    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Aldo', 'Ademi')
+    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Marco', 'Togni')
+    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Piero', 'Giallo')
+    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Nello', 'Taver')
+    // await sendTestElection(signer, chainDemocracyProgramId, connection, 'Fabrizio', 'Corona')
+    // await sendTestElection(signer, chainDemocracyProgramId, connection, 'Nicolo', 'Fagioli')
 }
 
 main().then(() => {

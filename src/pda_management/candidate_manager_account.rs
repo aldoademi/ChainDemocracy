@@ -10,7 +10,7 @@ use solana_program::{
     borsh::try_from_slice_unchecked,
 };
 
-use crate::{state::candidate_state::CandidateState, pda_management::candidate_list_manager_account::add_candidate_to_candidate_list};
+use crate::{state::candidate_state::CandidateState, pda_management::{candidate_list_manager_account::add_candidate_to_candidate_list, election_manager_account::add_candidate_to_election}};
 use borsh::BorshSerialize;
 
 pub fn add_candidate(
@@ -29,6 +29,7 @@ pub fn add_candidate(
     let initializer = next_account_info(account_info_iter)?;
     let pda_account = next_account_info(account_info_iter)?;
     let pda_candidate_list = next_account_info(account_info_iter)?;
+    let pda_election_account = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
 
     let candidate_first_name = first_name.clone();
@@ -74,7 +75,7 @@ pub fn add_candidate(
         let is_candidate_in_list = add_candidate_to_candidate_list(program_id, pda_candidate_list, &pda, election_name, candidate_first_name, candidate_last_name, seed);
 
         if is_candidate_in_list.is_ok() {
-            return Ok(())
+            add_candidate_to_election(pda_election_account, pda)
         }
         else {
             return Err(ProgramError::AccountBorrowFailed) 
@@ -86,13 +87,13 @@ pub fn add_candidate(
 }
 
 pub fn intialize_candidate_account (
-    pda_account: &AccountInfo,
+    candidate_pda_account: &AccountInfo,
     first_name: String,
     last_name: String
 ) -> ProgramResult{
 
     msg!("Unpacking candidate account");
-    let mut account_data = try_from_slice_unchecked::<CandidateState>(&pda_account.data.borrow()).unwrap();
+    let mut account_data = try_from_slice_unchecked::<CandidateState>(&candidate_pda_account.data.borrow()).unwrap();
     msg!("Borrowed account data");
 
     account_data.first_name = first_name;
@@ -100,8 +101,10 @@ pub fn intialize_candidate_account (
     account_data.is_initialized = true;
 
     msg!("Serializing account");
-    account_data.serialize(&mut &mut pda_account.data.borrow_mut()[..])?;
+    account_data.serialize(&mut &mut candidate_pda_account.data.borrow_mut()[..])?;
     msg!("Account serialized");
+
+
 
     Ok(())
 }

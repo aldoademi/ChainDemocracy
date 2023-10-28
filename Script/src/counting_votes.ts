@@ -38,7 +38,7 @@ const electionInstructionLayout = borsh.struct([
 
 async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
     let buffer = Buffer.alloc(1000)
-    const election_name = 'Test1'
+    const election_name = 'Finale1'
     const candidate_list_seed = 'candidate-list'
     const result_seed = 'result'
     electionInstructionLayout.encode(
@@ -117,35 +117,14 @@ function pausaPerSecondi(secondi: number): Promise<void> {
 }
 
 async function main() {
-    // const signer =  web3.Keypair.generate()
-    
     const connection = new web3.Connection("http://127.0.0.1:8899")
-    // await airdropSolIfNeeded(signer, connection)
-
-    // await pausaPerSecondi(20)
-    
-    // // const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')        // DAVIDE
-    // const chainDemocracyProgramId = new web3.PublicKey('BbVtcrJ2UFC2N2yfBj6BxVEwgyqygyiBGFnDMC19mZqj')          // ALDO
-    // await sendTestElection(signer, chainDemocracyProgramId, connection)
-
-
-    // const[result_pda] = await web3.PublicKey.findProgramAddress(
-    //     [chainDemocracyProgramId.toBuffer(), Buffer.from('Test1'), Buffer.from('result')],
-    //     chainDemocracyProgramId
-    // )
-
-    // getResults(result_pda,connection)
-
     const signer =  web3.Keypair.generate()
-    
-    // const signer = initializeSignerKeypair()
 
-    // let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
     await airdropSolIfNeeded(signer, connection)
 
     await pausaPerSecondi(20)
     
-    const chainDemocracyProgramId = new web3.PublicKey('DRY5UyCLRJLRmXs9R1Ko4iTvZHMdKWFgycMGAxeBAxmo')
+    const chainDemocracyProgramId = new web3.PublicKey('D8uNF3ywq7MrXYTosYrcgogARSfT3k7iENs9xVYV1Uij')
     await sendTestElection(signer, chainDemocracyProgramId, connection)
 }
 
@@ -156,20 +135,3 @@ main().then(() => {
     console.log(error)
     process.exit(1)
 })
-
-//------------------
-
-// const ResultData = borsh.struct([
-//     borsh.map(borsh.i32, borsh.f64,'result')
-// ])
-
-// async function getResults(result_pda_address: web3.PublicKey, connection: web3.Connection) {
-//     const result_pda_account = await connection.getAccountInfo(result_pda_address)
-
-//     if(result_pda_account) {
-//         const decodedResult = ResultData.decode(result_pda_account)
-
-//         console.log(decodedResult.result)
-
-//     }
-// }

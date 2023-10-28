@@ -9,7 +9,7 @@ use solana_program::{
 pub mod instruction;
 use instruction::ChainDemocracyInstruction;
 pub mod pda_management;
-use pda_management::{candidate_manager_account, election_manager_account, candidate_list_manager_account, vote_manager_accout::add_voter_account_and_vote, result_manager_account::counting_votes};
+use pda_management::{candidate_manager_account, election_manager_account, candidate_list_manager_account, voter_manager_accout::add_voter_account_and_vote, result_manager_account::counting_votes};
 pub mod state;
 pub mod utilities;
 

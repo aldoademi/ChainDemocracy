@@ -35,7 +35,7 @@ pub fn generate_result_account (
         &[program_id.as_ref(), election_name.as_bytes().as_ref(), seed.as_bytes().as_ref()],
          program_id
         );    
-    let account_len: usize = 1000;
+    let account_len: usize = 10000;
 
     let rent = Rent::get()?;
     let rent_lamports = rent.minimum_balance(account_len);
@@ -101,6 +101,7 @@ pub fn counting_votes(
     for (candidate_info, candidate_pda_address) in candidate_list {
         //calcola la percentuale dei voti ricevuti
         let percentage_for_candidate = get_percentage_of_votes(election_pda_account, candidate_pda_address)?;
+        msg!("PERCENTUALE RICEVUTA {}", percentage_for_candidate);
         let _ = add_result(result_pda_account, candidate_info, percentage_for_candidate);
     }
 
@@ -116,7 +117,7 @@ pub fn counting_votes(
 pub fn add_result (
     result_pda_account: &AccountInfo,
     candidate_info: String,
-    percentage_received: f64,
+    percentage_received: f32,
 ) -> ProgramResult {
 
     msg!("Unpacking vote account...");

@@ -11,7 +11,11 @@ use solana_program::{
     borsh::try_from_slice_unchecked,
 };
 
-use crate::{state::voter_account_state::VoterAccountState, pda_management::{candidate_list_manager_account::retrieve_candidate_account, election_manager_account::add_vote}};
+use crate::{
+    state::voter_account_state::VoterAccountState,
+     pda_management::{candidate_list_manager_account::retrieve_candidate_account,
+         election_manager_account::add_vote}
+};
 
 pub fn add_voter_account_and_vote (
     program_id: &Pubkey,
@@ -55,7 +59,7 @@ pub fn add_voter_account_and_vote (
     }
     
     //Calcola dimensione dell'account
-    let account_len: usize = 4 * electoral_card_number.len();
+    let account_len: usize = 4 * electoral_card_number.len() + 32;
 
     //Calcola costo di rent
     let rent = Rent::get()?;
@@ -77,32 +81,57 @@ pub fn add_voter_account_and_vote (
     msg!("PDA Created: {}",pda);
 
     //inizializza account
-    let is_initialized = initialize_voter_account( pda_account, electoral_card_number);
+    // let is_initialized = initialize_voter_account( pda_account, electoral_card_number);
 
-    if is_initialized.is_ok() {
-        //recupera il candidato in candidate list, se lo trova (Ok) aggiunge voto nell'account elezione
-        match  retrieve_candidate_account( candidate_list_pda_account, candidate_first_name, candidate_last_name) {
-            Ok(candidate_address) => {
-                let vote = add_vote(election_pda_account, candidate_address, &pda);
-            }
-            Err(error)=> {
-                msg!("Error, invalid candidate");
-                return Err(ProgramError::InvalidAccountData)
+    // if is_initialized.is_ok() {
+    //     //recupera il candidato in candidate list, se lo trova (Ok) aggiunge voto nell'account elezione
+    //     match  retrieve_candidate_account( candidate_list_pda_account, candidate_first_name, candidate_last_name) {
+    //         Ok(candidate_address) => {
+    //             let vote = add_vote(election_pda_account, candidate_address, &pda);
+    //         }
+    //         Err(error)=> {
+    //             msg!("Error, invalid candidate");
+    //             return Err(ProgramError::InvalidAccountData)
     
-            }
-        }
-    } else {
-        msg!("Error in voter account");
-        return Err(ProgramError::AccountAlreadyInitialized)
-    }
+    //         }
+    //     }
+    // } else {
+    //     msg!("Error in voter account");
+    //     return Err(ProgramError::AccountAlreadyInitialized)
+    // }
 
-    Ok(())
+
+    
+    //recupera il candidato in candidate list, se lo trova (Ok) aggiunge voto nell'account elezione
+    match  retrieve_candidate_account( candidate_list_pda_account, candidate_first_name.clone(), candidate_last_name.clone()) {
+        Ok(candidate_address) => {
+
+            let is_voter_initialized = initialize_voter_account(pda_account, electoral_card_number, candidate_address);
+
+            if is_voter_initialized.is_ok() {
+                
+                let _ = add_vote(election_pda_account, candidate_address);
+                msg!("Hai votato {} {}", candidate_first_name, candidate_last_name);
+                return Ok(());
+                
+            } else {
+                return Err(ProgramError::InvalidSeeds);
+            }
+
+        }
+        Err(error)=> {
+            msg!("Error, invalid candidate {}",error);
+            return Err(ProgramError::InvalidAccountData)
+    
+        }
+    }
 }
 
 
 pub fn initialize_voter_account (
     pda_account: &AccountInfo,
-    electoral_card_number: String
+    electoral_card_number: String,
+    candidate_address: Pubkey
 ) ->ProgramResult {
 
     msg!("Unpacking voter account");
@@ -110,6 +139,8 @@ pub fn initialize_voter_account (
     msg!("Borrowed account data");
     
     account_data.election_card_number = electoral_card_number;
+    account_data.voted = candidate_address;
+
 
     msg!("Serializing account");
     account_data.serialize(&mut &mut pda_account.data.borrow_mut()[..])?;

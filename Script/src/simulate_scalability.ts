@@ -5,11 +5,13 @@ import * as fs from 'fs'
 
 dotenv.config();
 
+let cont = 0;
+
 function initializeSignerKeypair(): web3.Keypair {
     if (!process.env.PRIVATE_KEY) {
         console.log('Creating .env file')
         const signer = web3.Keypair.generate()
-        fs.writeFileSync('.env',`PRIVATE_KEY=[${signer.secretKey.toString()}]`)
+        fs.writeFileSync('.env', `PRIVATE_KEY=[${signer.secretKey.toString()}]`)
         return signer
     }
     
@@ -28,7 +30,7 @@ const {
   } = web3;
   
 
-const TOTAL_TRANSACTIONS = 5; // Numero totale di transazioni da inviare
+const TOTAL_TRANSACTIONS = 10000; // Numero totale di transazioni da inviare
 
 async function airdropSolIfNeeded(signer: web3.Keypair, connection: web3.Connection) {
     const balance = await connection.getBalance(signer.publicKey);
@@ -48,13 +50,22 @@ const electionInstructionLayout = borsh.struct([
     borsh.str('seed'),
 ]);
 
-async function sendSingleElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection, index: number) {
+
+
+async function sendSingleElection(
+    signer: web3.Keypair, 
+    programId: web3.PublicKey, 
+    connection: web3.Connection, 
+    index: number,
+    pda_candidate_list: web3.PublicKey,
+    pda_election: web3.PublicKey
+    ) {
 
     let buffer = Buffer.alloc(1000);
-    const electoral_card_number = `EC${index}`;
-    const first_name = 'Marco';
-    const last_name = 'Togni';
-    const election_name = 'Test1';
+    const electoral_card_number = `PP${index}`;
+    const first_name = 'Nello';
+    const last_name = 'Taver';
+    const election_name = 'Finale1';
     const seed = 'candidate-list';
     electionInstructionLayout.encode(
         {
@@ -75,15 +86,15 @@ async function sendSingleElection(signer: web3.Keypair, programId: web3.PublicKe
         programId
     )
 
-    const[pda_candidate_list] = await web3.PublicKey.findProgramAddress(
-        [programId.toBuffer(), Buffer.from(election_name),Buffer.from(seed)],
-        programId
-    )
+    // const[pda_candidate_list] = await web3.PublicKey.findProgramAddress(
+    //     [programId.toBuffer(), Buffer.from(election_name),Buffer.from(seed)],
+    //     programId
+    // )
 
-    const[pda_election] = await web3.PublicKey.findProgramAddress(
-        [programId.toBuffer(), Buffer.from(election_name)],
-        programId
-    )
+    // const[pda_election] = await web3.PublicKey.findProgramAddress(
+    //     [programId.toBuffer(), Buffer.from(election_name)],
+    //     programId
+    // )
 
     console.log("PDA is:", pda.toBase58())
 
@@ -126,10 +137,10 @@ async function sendSingleElection(signer: web3.Keypair, programId: web3.PublicKe
     console.log(`Transaction ${index} submitted with signature: ${tx} - https://explorer.solana.com/tx/${tx}?cluster=custom `);
 }
 
-async function sendTestElectionsConcurrent(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
+async function sendTestElectionsConcurrent(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection, pda_candidate_list: web3.PublicKey, pda_election: web3.PublicKey) {
     const promises = [];
     for (let i = 0; i < TOTAL_TRANSACTIONS; i++) {
-        promises.push(sendSingleElection(signer, programId, connection, i));
+        promises.push(sendSingleElection(signer, programId, connection, i, pda_candidate_list,pda_election));
     }
     await Promise.all(promises);
 }
@@ -146,9 +157,25 @@ async function main() {
     // await airdropSolIfNeeded(signer, connection);
     // await pausaPerSecondi(15);
     const signer = initializeSignerKeypair();
+    const chainDemocracyProgramId = new web3.PublicKey('D8uNF3ywq7MrXYTosYrcgogARSfT3k7iENs9xVYV1Uij');
+
+    const election_name = 'Finale1';
+    const seed = 'candidate-list';
+
+    const[pda_candidate_list] = await web3.PublicKey.findProgramAddress(
+        [chainDemocracyProgramId.toBuffer(), Buffer.from(election_name),Buffer.from(seed)],
+        chainDemocracyProgramId
+    )
+
+    const[pda_election] = await web3.PublicKey.findProgramAddress(
+        [chainDemocracyProgramId.toBuffer(), Buffer.from(election_name)],
+        chainDemocracyProgramId
+    )
+
+
     // let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
-    const chainDemocracyProgramId = new web3.PublicKey('DRY5UyCLRJLRmXs9R1Ko4iTvZHMdKWFgycMGAxeBAxmo');
-    await sendTestElectionsConcurrent(signer, chainDemocracyProgramId, connection);
+    
+    await sendTestElectionsConcurrent(signer, chainDemocracyProgramId, connection, pda_candidate_list,pda_election);
 }
 
 main().then(() => {

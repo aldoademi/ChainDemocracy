@@ -53,8 +53,8 @@ pub fn add_election_account(
      (4 * name.len()) + 
      (4 * formatted_start_date.len()) +
      (4 * formatted_end_date.len()) +
-     10000;
     //  6 * (32 + 32 * 10);
+    10000;
 
     //calcola il costo di rent
     let rent = Rent::get()?;
@@ -129,10 +129,44 @@ pub fn initialize_election_account(
 }
 
 
+pub fn increment_vote_counter (
+    election_pda_account: &AccountInfo
+) -> ProgramResult {
+    msg!("Unpacking vote account...");
+    let mut account_data: ElectionAccountState = try_from_slice_unchecked::<ElectionAccountState>(&election_pda_account.data.borrow()).unwrap();
+
+    account_data.number_of_votes +=1;
+
+    msg!("Serializing account");
+    account_data.serialize(&mut &mut election_pda_account.data.borrow_mut()[..])?;
+    msg!("Vote account serialized");
+
+    Ok(())
+}
+
+pub fn add_candidate_to_election(
+    election_pda_account: &AccountInfo,
+    candidate_address: Pubkey
+) -> ProgramResult {
+    msg!("Unpacking vote account...");
+    let mut account_data: ElectionAccountState = try_from_slice_unchecked::<ElectionAccountState>(&election_pda_account.data.borrow()).unwrap();
+
+    account_data.votes.insert(candidate_address, 0);
+
+    msg!("Aggiunto Candidato all'Elezione");
+
+    msg!("Serializing account");
+    account_data.serialize(&mut &mut election_pda_account.data.borrow_mut()[..])?;
+    msg!("Vote account serialized");
+
+    Ok(())
+
+}
+
+
 pub fn add_vote(
     pda_account: &AccountInfo,
     candidate_address: Pubkey,
-    voter_address: &Pubkey
 
 ) -> ProgramResult {
 
@@ -142,20 +176,24 @@ pub fn add_vote(
 
 
     msg!("Adding new vote");
-    // ottiene una referenza mutabile al valore associato alla chiave.
-    let entry = account_data.votes.entry(candidate_address).or_insert(Vec::new());
-    // Aggiungi il valore al vettore.
-    entry.push(*voter_address);
+    // // ottiene una referenza mutabile al valore associato alla chiave.
+    // let entry = account_data.votes.entry(candidate_address).or_insert(Vec::new());
+    // // Aggiungi il valore al vettore.
+    // entry.push(*voter_address);
 
-
-    // Stampa tutti i valori nel HashMap
-    for (key, values) in &account_data.votes {
-        msg!("Candidato: {:?}", key);
-        msg!("Votato da: :");
-        for value in values {
-            msg!("  {:?}", value);
-        }
+    if let Some(value) = account_data.votes.get_mut(&candidate_address) {
+        *value += 1;
     }
+
+
+    // // Stampa tutti i valori nel HashMap
+    // for (key, values) in &account_data.votes {
+    //     msg!("Candidato: {:?}", key);
+    //     msg!("Votato da: :");
+    //     for value in values {
+    //         msg!("  {:?}", value);
+    //     }
+    // }
 
     account_data.number_of_votes +=1;
 
@@ -170,25 +208,23 @@ pub fn add_vote(
 pub fn get_percentage_of_votes (
     election_pda_account: &AccountInfo,
     candidate_pda_address: Pubkey
-) -> Result<f64,ProgramError> {
+) -> Result<f32,ProgramError> {
 
     msg!("Unpacking vote account...");
     let mut account_data: ElectionAccountState = try_from_slice_unchecked::<ElectionAccountState>(&election_pda_account.data.borrow()).unwrap();
     
-    let votes_for_candidate = account_data.votes.get(&candidate_pda_address);
+    let votes_for_candidate = account_data.votes.get(&candidate_pda_address).unwrap();
 
-    match votes_for_candidate {
-        Some(votes) => {
-            let vec_len = votes.len() as i64;
-            let percentage = ((100/account_data.number_of_votes) * vec_len) as f64;
-            return Ok(percentage);
-        }
-        None => {
-            return Ok(0.0);
-        }
-    }
+    msg!("VOTI RICEVUTO DA {} SONO {} SU {}",candidate_pda_address,votes_for_candidate, account_data.number_of_votes);
+
+    let percentage = (100.0/account_data.number_of_votes as f32) * *votes_for_candidate as f32;
+
+    msg!("OPERAZIONE ESEGUITA: (100/ {} ) * {}) = {}",account_data.number_of_votes, account_data.votes.get(&candidate_pda_address).unwrap(), percentage);
+    return Ok(percentage);
+        
+    
 }
-
+//OTTIENE IL NUMERO TOTALE DI VOTI
 pub fn get_number_of_votes (
     election_pda_account: &AccountInfo,
 ) -> Result<i64,ProgramError> {
