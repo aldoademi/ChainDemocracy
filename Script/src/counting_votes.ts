@@ -24,29 +24,27 @@ async function airdropSolIfNeeded(signer: web3.Keypair, connection: web3.Connect
     console.log('Current balance is', balance)
     if (balance < web3.LAMPORTS_PER_SOL) {
         console.log('Airdropping 1 SOL...')
-        await connection.requestAirdrop(signer.publicKey, web3.LAMPORTS_PER_SOL)
+        await connection.requestAirdrop(signer.publicKey, web3.LAMPORTS_PER_SOL*3)
     }
 }
 
 const electionInstructionLayout = borsh.struct([
     borsh.u8('variant'),
     borsh.str('election_name'),
-    borsh.str('candidate_list_seed'),
-    borsh.str('result_seed'),
+    
     
 ])
 
 async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
     let buffer = Buffer.alloc(1000)
-    const election_name = 'Finale1'
+    const election_name = 'Elettorale1'
     const candidate_list_seed = 'candidate-list'
     const result_seed = 'result'
     electionInstructionLayout.encode(
         {
             variant: 3,
             election_name:election_name,
-            candidate_list_seed: candidate_list_seed,
-            result_seed: result_seed
+            
         },
         buffer
     )
@@ -70,6 +68,9 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
     )
 
     console.log("PDA is:", result_pda.toBase58())
+
+
+
 
     const transaction = new web3.Transaction()
     
@@ -117,14 +118,35 @@ function pausaPerSecondi(secondi: number): Promise<void> {
 }
 
 async function main() {
+    // const signer =  web3.Keypair.generate()
+    
     const connection = new web3.Connection("http://127.0.0.1:8899")
-    const signer =  web3.Keypair.generate()
+    // await airdropSolIfNeeded(signer, connection)
 
+    // await pausaPerSecondi(20)
+    
+    // // const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')        // DAVIDE
+    // const chainDemocracyProgramId = new web3.PublicKey('BbVtcrJ2UFC2N2yfBj6BxVEwgyqygyiBGFnDMC19mZqj')          // ALDO
+    // await sendTestElection(signer, chainDemocracyProgramId, connection)
+
+
+    // const[result_pda] = await web3.PublicKey.findProgramAddress(
+    //     [chainDemocracyProgramId.toBuffer(), Buffer.from('Test1'), Buffer.from('result')],
+    //     chainDemocracyProgramId
+    // )
+
+    // getResults(result_pda,connection)
+
+    const signer =  web3.Keypair.generate()
+    
+    // const signer = initializeSignerKeypair()
+
+    // let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
     await airdropSolIfNeeded(signer, connection)
 
     await pausaPerSecondi(20)
     
-    const chainDemocracyProgramId = new web3.PublicKey('D8uNF3ywq7MrXYTosYrcgogARSfT3k7iENs9xVYV1Uij')
+    const chainDemocracyProgramId = new web3.PublicKey('2c8HiQYrcQmFBcAmb2sBu25QLNRN7ZPbu6nLBQJbhHvQ')
     await sendTestElection(signer, chainDemocracyProgramId, connection)
 }
 
@@ -135,3 +157,20 @@ main().then(() => {
     console.log(error)
     process.exit(1)
 })
+
+//------------------
+
+// const ResultData = borsh.struct([
+//     borsh.map(borsh.i32, borsh.f64,'result')
+// ])
+
+// async function getResults(result_pda_address: web3.PublicKey, connection: web3.Connection) {
+//     const result_pda_account = await connection.getAccountInfo(result_pda_address)
+
+//     if(result_pda_account) {
+//         const decodedResult = ResultData.decode(result_pda_account)
+
+//         console.log(decodedResult.result)
+
+//     }
+// }

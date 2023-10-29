@@ -45,7 +45,7 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
     const electoral_card_number = 'EC8352'
     const first_name = 'Marco'
     const last_name = 'Togni'
-    const election_name = 'finale'
+    const election_name = 'Test1'
     const seed = 'candidate-list'
     electionInstructionLayout.encode(
         {
@@ -116,7 +116,7 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
     transaction.add(instruction)
     const tx = await web3.sendAndConfirmTransaction(connection, transaction, [signer])
     // console.log(`https://explorer.solana.com/tx/${tx}?cluster=custom`)
-    console.log(`Transaction: https://explorer.solana.com/tx/${tx}?cluster=custom`);
+    console.log(`Transaction: https://explorer.solana.com/tx/${tx}?cluster=devnet`);
 }
 
 function pausaPerSecondi(secondi: number): Promise<void> {

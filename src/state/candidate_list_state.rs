@@ -6,5 +6,5 @@ use solana_program::pubkey::Pubkey;
 #[derive(BorshSerialize,BorshDeserialize)]
 pub struct CandidateListState{
     pub is_initialized: bool,
-    pub candidate: HashMap<String, Pubkey>
+    pub candidates: HashMap<String, Pubkey>
 }

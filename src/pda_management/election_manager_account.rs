@@ -8,15 +8,13 @@ use solana_program::{
     program_error::ProgramError,
     sysvar::{rent::Rent, Sysvar},
     program::invoke_signed,
-    borsh::try_from_slice_unchecked,
+    borsh0_10::try_from_slice_unchecked,
 };
 
 use crate::state::election_account_state::ElectionAccountState;
 use crate::candidate_list_manager_account::generate_candidate_list_account;
 use crate::pda_management::result_manager_account::generate_result_account;
 use borsh::BorshSerialize;
-
-
 
 pub fn add_election_account(
     program_id: &Pubkey,
@@ -25,42 +23,38 @@ pub fn add_election_account(
     start_date: NaiveDateTime,
     end_date: NaiveDateTime
 ) -> ProgramResult {
-
-    //Converte le date in stringhe
+    //CONVERSIONE DELLE DATE IN STRINGHE
     let formatted_start_date = start_date.format("%Y-%m-%d %H:%M:%S").to_string();
     let formatted_end_date = end_date.format("%Y-%m-%d %H:%M:%S").to_string();
 
     let electione_name = name.clone();
     let election_name_for_result = name.clone();
 
-    //Crea Iteratore su accounts[]
+    //CREA ITERATORE SU ACCOUNTS
     let account_info_iter = &mut accounts.iter();
 
-    //Prende gli account forniti dal client
+    //RECUPERA ACCOUNT FORNITI DA ACCOUNT
     let initializer = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
     let election_pda_account = next_account_info(account_info_iter)?;
-    
-
-    //Deriva PDA
+    //DERIVA PDA
     let (election_pda, election_bump_seed) = Pubkey::find_program_address(
         &[program_id.as_ref(), name.as_bytes().as_ref()],
          program_id
         );    
     
-    //Calcola dimensione dell'account
+    //CALCOLA DIMENSIONE DELL'ACCOUNT
     let account_len: usize = 1 +
      (4 * name.len()) + 
      (4 * formatted_start_date.len()) +
      (4 * formatted_end_date.len()) +
-    //  6 * (32 + 32 * 10);
     10000;
 
-    //calcola il costo di rent
+    //CALCOLA IL COSTO DI RENT
     let rent = Rent::get()?;
     let rent_lamports = rent.minimum_balance(account_len);
 
-    //Crea l'account
+    //CREA L'ACCOUNT 
     invoke_signed(
         &system_instruction::create_account(
             initializer.key, 
@@ -75,7 +69,7 @@ pub fn add_election_account(
 
     msg!("PDA Created: {}",election_pda);
 
-    //inizializza l'account
+    //INIZIALIZZA L'ACCOUNT 
     let is_election_created = initialize_election_account(election_pda_account, name, formatted_start_date, formatted_end_date);
        
     if is_election_created.is_ok(){
@@ -109,7 +103,6 @@ pub fn initialize_election_account(
     start_date: String,
     end_date: String
 ) -> ProgramResult {
-
     msg!("Unpacking vote account");
     let mut account_data = try_from_slice_unchecked::<ElectionAccountState>(&pda_account.data.borrow()).unwrap();
 
@@ -125,9 +118,7 @@ pub fn initialize_election_account(
     msg!("Account serialized");
 
     Ok(())
-
 }
-
 
 pub fn increment_vote_counter (
     election_pda_account: &AccountInfo
@@ -160,41 +151,21 @@ pub fn add_candidate_to_election(
     msg!("Vote account serialized");
 
     Ok(())
-
 }
-
 
 pub fn add_vote(
     pda_account: &AccountInfo,
     candidate_address: Pubkey,
 
 ) -> ProgramResult {
-
-    
     msg!("Unpacking vote account...");
     let mut account_data: ElectionAccountState = try_from_slice_unchecked::<ElectionAccountState>(&pda_account.data.borrow()).unwrap();
 
-
     msg!("Adding new vote");
-    // // ottiene una referenza mutabile al valore associato alla chiave.
-    // let entry = account_data.votes.entry(candidate_address).or_insert(Vec::new());
-    // // Aggiungi il valore al vettore.
-    // entry.push(*voter_address);
 
     if let Some(value) = account_data.votes.get_mut(&candidate_address) {
         *value += 1;
     }
-
-
-    // // Stampa tutti i valori nel HashMap
-    // for (key, values) in &account_data.votes {
-    //     msg!("Candidato: {:?}", key);
-    //     msg!("Votato da: :");
-    //     for value in values {
-    //         msg!("  {:?}", value);
-    //     }
-    // }
-
     account_data.number_of_votes +=1;
 
     msg!("Serializing account");
@@ -204,33 +175,25 @@ pub fn add_vote(
     Ok(())
 }
 
-
 pub fn get_percentage_of_votes (
     election_pda_account: &AccountInfo,
     candidate_pda_address: Pubkey
 ) -> Result<f32,ProgramError> {
 
-    msg!("Unpacking vote account...");
-    let mut account_data: ElectionAccountState = try_from_slice_unchecked::<ElectionAccountState>(&election_pda_account.data.borrow()).unwrap();
+    let account_data: ElectionAccountState = try_from_slice_unchecked::<ElectionAccountState>(&election_pda_account.data.borrow()).unwrap();
     
     let votes_for_candidate = account_data.votes.get(&candidate_pda_address).unwrap();
-
-    msg!("VOTI RICEVUTO DA {} SONO {} SU {}",candidate_pda_address,votes_for_candidate, account_data.number_of_votes);
-
     let percentage = (100.0/account_data.number_of_votes as f32) * *votes_for_candidate as f32;
 
-    msg!("OPERAZIONE ESEGUITA: (100/ {} ) * {}) = {}",account_data.number_of_votes, account_data.votes.get(&candidate_pda_address).unwrap(), percentage);
     return Ok(percentage);
-        
-    
 }
+
 //OTTIENE IL NUMERO TOTALE DI VOTI
 pub fn get_number_of_votes (
     election_pda_account: &AccountInfo,
 ) -> Result<i64,ProgramError> {
 
-    msg!("Unpacking vote account...");
-    let mut account_data: ElectionAccountState = try_from_slice_unchecked::<ElectionAccountState>(&election_pda_account.data.borrow()).unwrap();
+    let account_data: ElectionAccountState = try_from_slice_unchecked::<ElectionAccountState>(&election_pda_account.data.borrow()).unwrap();
     
     let number_of_votes = account_data.number_of_votes;
 

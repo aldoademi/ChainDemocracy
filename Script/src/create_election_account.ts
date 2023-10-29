@@ -38,7 +38,7 @@ const voteInstructionLayout = borsh.struct([
 
 async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
     let buffer = Buffer.alloc(1000)
-    const voteAccountName = 'Finale1'
+    const voteAccountName = 'Elettorale1'
     const start_date = '2023-11-09T15:00:00'
     const end_date = '2023-12-09T15:00:00'
     const seed = 'candidate-list'
@@ -122,7 +122,7 @@ async function main() {
     const signer =  web3.Keypair.generate()
     // const signer = initializeSignerKeypair()
     // const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')        // DAVIDE
-    const chainDemocracyProgramId = new web3.PublicKey('D8uNF3ywq7MrXYTosYrcgogARSfT3k7iENs9xVYV1Uij')          // ALDO
+    const chainDemocracyProgramId = new web3.PublicKey('2c8HiQYrcQmFBcAmb2sBu25QLNRN7ZPbu6nLBQJbhHvQ')          // ALDO
     // let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
     const connection = new web3.Connection("http://127.0.0.1:8899")
     await airdropSolIfNeeded(signer, connection)

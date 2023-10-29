@@ -41,7 +41,7 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
     let buffer = Buffer.alloc(1000)
     const first_name = firstName
     const last_name = lastName
-    const election_name = 'Finale1'
+    const election_name = 'Elettorale1'
     const seed = 'candidate-list'
     electionInstructionLayout.encode(
         {
@@ -130,13 +130,13 @@ async function main() {
     await pausaPerSecondi(15)
     
     // const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')        // DAVIDE
-    const chainDemocracyProgramId = new web3.PublicKey('D8uNF3ywq7MrXYTosYrcgogARSfT3k7iENs9xVYV1Uij')          // ALDO
+    const chainDemocracyProgramId = new web3.PublicKey('2c8HiQYrcQmFBcAmb2sBu25QLNRN7ZPbu6nLBQJbhHvQ')          // ALDO
     await sendTestElection(signer, chainDemocracyProgramId, connection, 'Aldo', 'Ademi')
     await sendTestElection(signer, chainDemocracyProgramId, connection, 'Marco', 'Togni')
     await sendTestElection(signer, chainDemocracyProgramId, connection, 'Piero', 'Giallo')
     await sendTestElection(signer, chainDemocracyProgramId, connection, 'Nello', 'Taver')
-    // await sendTestElection(signer, chainDemocracyProgramId, connection, 'Fabrizio', 'Corona')
-    // await sendTestElection(signer, chainDemocracyProgramId, connection, 'Nicolo', 'Fagioli')
+    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Fabrizio', 'Corona')
+    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Nicolo', 'Fagioli')
 }
 
 main().then(() => {

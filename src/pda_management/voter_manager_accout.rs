@@ -8,7 +8,7 @@ use solana_program::{
     program_error::ProgramError,
     sysvar::{rent::Rent, Sysvar},
     program::invoke_signed,
-    borsh::try_from_slice_unchecked,
+    borsh0_10::try_from_slice_unchecked,
 };
 
 use crate::{
@@ -80,29 +80,6 @@ pub fn add_voter_account_and_vote (
 
     msg!("PDA Created: {}",pda);
 
-    //inizializza account
-    // let is_initialized = initialize_voter_account( pda_account, electoral_card_number);
-
-    // if is_initialized.is_ok() {
-    //     //recupera il candidato in candidate list, se lo trova (Ok) aggiunge voto nell'account elezione
-    //     match  retrieve_candidate_account( candidate_list_pda_account, candidate_first_name, candidate_last_name) {
-    //         Ok(candidate_address) => {
-    //             let vote = add_vote(election_pda_account, candidate_address, &pda);
-    //         }
-    //         Err(error)=> {
-    //             msg!("Error, invalid candidate");
-    //             return Err(ProgramError::InvalidAccountData)
-    
-    //         }
-    //     }
-    // } else {
-    //     msg!("Error in voter account");
-    //     return Err(ProgramError::AccountAlreadyInitialized)
-    // }
-
-
-    
-    //recupera il candidato in candidate list, se lo trova (Ok) aggiunge voto nell'account elezione
     match  retrieve_candidate_account( candidate_list_pda_account, candidate_first_name.clone(), candidate_last_name.clone()) {
         Ok(candidate_address) => {
 

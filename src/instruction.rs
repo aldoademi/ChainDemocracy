@@ -29,8 +29,6 @@ pub enum ChainDemocracyInstruction {
     },
     CountingVotes {
         election_name: String,
-        candidate_list_seed: String,
-        result_seed: String
     }
 }
 
@@ -60,8 +58,6 @@ struct  AddVotePayload{
 #[derive(BorshDeserialize)]
 struct  CountingVotesPayload{
     election_name: String,
-    candidate_list_seed: String,
-    result_seed: String
 }
 impl ChainDemocracyInstruction {
 
@@ -99,11 +95,7 @@ impl ChainDemocracyInstruction {
             }
             3 => {
                 let payload = CountingVotesPayload::try_from_slice(rest).unwrap();
-                Self::CountingVotes { 
-                    election_name: payload.election_name, 
-                    candidate_list_seed: payload.candidate_list_seed,
-                     result_seed: payload.result_seed 
-                    }
+                Self::CountingVotes {election_name: payload.election_name}
             }
             _=> return Err(ProgramError::InvalidInstructionData)
         })

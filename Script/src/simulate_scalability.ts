@@ -30,7 +30,7 @@ const {
   } = web3;
   
 
-const TOTAL_TRANSACTIONS = 10000; // Numero totale di transazioni da inviare
+const TOTAL_TRANSACTIONS = 1; // Numero totale di transazioni da inviare
 
 async function airdropSolIfNeeded(signer: web3.Keypair, connection: web3.Connection) {
     const balance = await connection.getBalance(signer.publicKey);
@@ -62,10 +62,10 @@ async function sendSingleElection(
     ) {
 
     let buffer = Buffer.alloc(1000);
-    const electoral_card_number = `PP${index}`;
-    const first_name = 'Nello';
-    const last_name = 'Taver';
-    const election_name = 'Finale1';
+    const electoral_card_number = `RR${index}`;
+    const first_name = 'Fabrizio';
+    const last_name = 'Corona';
+    const election_name = 'Elettorale1';
     const seed = 'candidate-list';
     electionInstructionLayout.encode(
         {
@@ -157,9 +157,9 @@ async function main() {
     // await airdropSolIfNeeded(signer, connection);
     // await pausaPerSecondi(15);
     const signer = initializeSignerKeypair();
-    const chainDemocracyProgramId = new web3.PublicKey('D8uNF3ywq7MrXYTosYrcgogARSfT3k7iENs9xVYV1Uij');
+    const chainDemocracyProgramId = new web3.PublicKey('2c8HiQYrcQmFBcAmb2sBu25QLNRN7ZPbu6nLBQJbhHvQ');
 
-    const election_name = 'Finale1';
+    const election_name = 'Elettorale1';
     const seed = 'candidate-list';
 
     const[pda_candidate_list] = await web3.PublicKey.findProgramAddress(
