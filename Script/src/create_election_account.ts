@@ -120,10 +120,7 @@ function pausaPerSecondi(secondi: number): Promise<void> {
 
 async function main() {
     const signer =  web3.Keypair.generate()
-    // const signer = initializeSignerKeypair()
-    // const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')        // DAVIDE
-    const chainDemocracyProgramId = new web3.PublicKey('2c8HiQYrcQmFBcAmb2sBu25QLNRN7ZPbu6nLBQJbhHvQ')          // ALDO
-    // let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
+    const chainDemocracyProgramId = new web3.PublicKey('BGBn8nMTKxa9sPmcoFJmCXtqSJtyM2WtR8Lr1v7skUGP')          // ALDO
     const connection = new web3.Connection("http://127.0.0.1:8899")
     await airdropSolIfNeeded(signer, connection)
 

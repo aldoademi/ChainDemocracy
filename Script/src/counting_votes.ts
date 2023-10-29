@@ -117,36 +117,15 @@ function pausaPerSecondi(secondi: number): Promise<void> {
     });
 }
 
-async function main() {
-    // const signer =  web3.Keypair.generate()
-    
+async function main() {    
     const connection = new web3.Connection("http://127.0.0.1:8899")
-    // await airdropSolIfNeeded(signer, connection)
-
-    // await pausaPerSecondi(20)
-    
-    // // const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')        // DAVIDE
-    // const chainDemocracyProgramId = new web3.PublicKey('BbVtcrJ2UFC2N2yfBj6BxVEwgyqygyiBGFnDMC19mZqj')          // ALDO
-    // await sendTestElection(signer, chainDemocracyProgramId, connection)
-
-
-    // const[result_pda] = await web3.PublicKey.findProgramAddress(
-    //     [chainDemocracyProgramId.toBuffer(), Buffer.from('Test1'), Buffer.from('result')],
-    //     chainDemocracyProgramId
-    // )
-
-    // getResults(result_pda,connection)
 
     const signer =  web3.Keypair.generate()
-    
-    // const signer = initializeSignerKeypair()
-
-    // let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
     await airdropSolIfNeeded(signer, connection)
 
     await pausaPerSecondi(20)
     
-    const chainDemocracyProgramId = new web3.PublicKey('2c8HiQYrcQmFBcAmb2sBu25QLNRN7ZPbu6nLBQJbhHvQ')
+    const chainDemocracyProgramId = new web3.PublicKey('BGBn8nMTKxa9sPmcoFJmCXtqSJtyM2WtR8Lr1v7skUGP')
     await sendTestElection(signer, chainDemocracyProgramId, connection)
 }
 
@@ -157,20 +136,3 @@ main().then(() => {
     console.log(error)
     process.exit(1)
 })
-
-//------------------
-
-// const ResultData = borsh.struct([
-//     borsh.map(borsh.i32, borsh.f64,'result')
-// ])
-
-// async function getResults(result_pda_address: web3.PublicKey, connection: web3.Connection) {
-//     const result_pda_account = await connection.getAccountInfo(result_pda_address)
-
-//     if(result_pda_account) {
-//         const decodedResult = ResultData.decode(result_pda_account)
-
-//         console.log(decodedResult.result)
-
-//     }
-// }

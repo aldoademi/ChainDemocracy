@@ -121,20 +121,17 @@ function pausaPerSecondi(secondi: number): Promise<void> {
 
 async function main() {
     const signer =  web3.Keypair.generate()
-    // const signer = initializeSignerKeypair()
     
     const connection = new web3.Connection("http://127.0.0.1:8899")
-    // let connection = new web3.Connection(web3.clusterApiUrl("devnet"));
     await airdropSolIfNeeded(signer, connection)
 
     await pausaPerSecondi(15)
     
-    // const chainDemocracyProgramId = new web3.PublicKey('Hr7MuMT6ZmEVQtewmHnAbe3mAQ6j42toicBe7bU6rJX')        // DAVIDE
-    const chainDemocracyProgramId = new web3.PublicKey('2c8HiQYrcQmFBcAmb2sBu25QLNRN7ZPbu6nLBQJbhHvQ')          // ALDO
+    const chainDemocracyProgramId = new web3.PublicKey('BGBn8nMTKxa9sPmcoFJmCXtqSJtyM2WtR8Lr1v7skUGP')          // ALDO
     await sendTestElection(signer, chainDemocracyProgramId, connection, 'Aldo', 'Ademi')
     await sendTestElection(signer, chainDemocracyProgramId, connection, 'Marco', 'Togni')
     await sendTestElection(signer, chainDemocracyProgramId, connection, 'Piero', 'Giallo')
-    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Nello', 'Taver')
+    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Giorgia', 'Meloni')
     await sendTestElection(signer, chainDemocracyProgramId, connection, 'Fabrizio', 'Corona')
     await sendTestElection(signer, chainDemocracyProgramId, connection, 'Nicolo', 'Fagioli')
 }
