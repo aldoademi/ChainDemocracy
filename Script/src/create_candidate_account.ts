@@ -127,13 +127,13 @@ async function main() {
 
     await pausaPerSecondi(15)
     
-    const chainDemocracyProgramId = new web3.PublicKey('BGBn8nMTKxa9sPmcoFJmCXtqSJtyM2WtR8Lr1v7skUGP')          // ALDO
-    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Aldo', 'Ademi')
-    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Marco', 'Togni')
-    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Piero', 'Giallo')
+    const chainDemocracyProgramId = new web3.PublicKey('9UWSBaRmDNnaFwKADFVpZMJMstoAYWZPFHA6ej93dYKm')          // ALDO
+    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Matteo', 'Salvini')
+    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Giuseppe', 'Conte')
+    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Luigi', 'Di Maio')
     await sendTestElection(signer, chainDemocracyProgramId, connection, 'Giorgia', 'Meloni')
-    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Fabrizio', 'Corona')
-    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Nicolo', 'Fagioli')
+    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Silvio', 'Berlusconi')
+    await sendTestElection(signer, chainDemocracyProgramId, connection, 'Matteo', 'Renzi')
 }
 
 main().then(() => {

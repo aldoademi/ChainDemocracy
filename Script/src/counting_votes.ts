@@ -125,7 +125,7 @@ async function main() {
 
     await pausaPerSecondi(20)
     
-    const chainDemocracyProgramId = new web3.PublicKey('BGBn8nMTKxa9sPmcoFJmCXtqSJtyM2WtR8Lr1v7skUGP')
+    const chainDemocracyProgramId = new web3.PublicKey('9UWSBaRmDNnaFwKADFVpZMJMstoAYWZPFHA6ej93dYKm')
     await sendTestElection(signer, chainDemocracyProgramId, connection)
 }
 

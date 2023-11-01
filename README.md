@@ -10,17 +10,6 @@ https://docs.solana.com/getstarted/local
 - Install Rust Environment using this site:
 https://docs.solana.com/getstarted/rust
 
-- Before running any command, install all the dependencies:
-
-  ```sh
-  npm install
-  ```
-
-- Install @solana/web3.js:
-  ```sh
-  npm install --save @solana/web3.js
-  ```
-
 ## Compile
 
 To compile the program with cargo:
@@ -49,12 +38,29 @@ const chainDemocracyProgramId = new web3.PublicKey('*new Public Key*')
 
 ### To run the scripts:
 
-Go into the directory of the scripts:
+- Before running any command, install all the dependencies:
 
-```sh
-cd Script/src
-```
-and then run the script in this order:
+  ```sh
+  cd Script/src
+  npm install
+  ```
+
+- Install @solana/web3.js:
+  ```sh
+  npm install --save @solana/web3.js
+  ```
+
+- Install @project-serum/borsh
+  ```sh
+  npm install @project-serum/borsh
+  ```
+
+- Install dotenv
+  ```sh
+  npm install dotenv
+  ```
+
+Run the script in this order:
 
 ```sh
 npm run newElection
