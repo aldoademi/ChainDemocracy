@@ -69,5 +69,5 @@ npm run newElection
 npm run addCandidate
 ```
 ```sh
-npm run vote
+npm run testScalability
 ```
