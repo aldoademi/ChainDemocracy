@@ -36,7 +36,7 @@ const voteInstructionLayout = borsh.struct([
     
 ])
 
-async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
+async function createElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
     let buffer = Buffer.alloc(1000)
     const voteAccountName = 'Elettorale1'
     const start_date = '2023-11-09T15:00:00'
@@ -112,7 +112,7 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
     console.log(`https://explorer.solana.com/tx/${tx}?cluster=custom`)
 }
 
-function pausaPerSecondi(secondi: number): Promise<void> {
+function waitAirdropSol(secondi: number): Promise<void> {
     return new Promise((resolve) => {
       setTimeout(resolve, secondi * 1000);
     });
@@ -124,9 +124,9 @@ async function main() {
     const connection = new web3.Connection("http://127.0.0.1:8899")
     await airdropSolIfNeeded(signer, connection)
 
-    await pausaPerSecondi(15)
+    await waitAirdropSol(15)
     
-    await sendTestElection(signer, chainDemocracyProgramId, connection)
+    await createElection(signer, chainDemocracyProgramId, connection)
 }
 
 main().then(() => {

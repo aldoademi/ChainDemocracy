@@ -4,21 +4,6 @@ import * as fs from 'fs'
 import dotenv from 'dotenv'
 dotenv.config()
 
-function initializeSignerKeypair(): web3.Keypair {
-    if (!process.env.PRIVATE_KEY) {
-        console.log('Creating .env file')
-        const signer = web3.Keypair.generate()
-        fs.writeFileSync('.env',`PRIVATE_KEY=[${signer.secretKey.toString()}]`)
-        return signer
-    }
-    
-    const secret = JSON.parse(process.env.PRIVATE_KEY ?? "") as number[]
-    const secretKey = Uint8Array.from(secret)
-    const keypairFromSecretKey = web3.Keypair.fromSecretKey(secretKey)
-    console.log('Signer public key:', keypairFromSecretKey.publicKey.toBase58())
-    return keypairFromSecretKey
-}
-
 async function airdropSolIfNeeded(signer: web3.Keypair, connection: web3.Connection) {
     const balance = await connection.getBalance(signer.publicKey)
     console.log('Current balance is', balance)
@@ -40,7 +25,7 @@ const electionInstructionLayout = borsh.struct([
 
 
 
-async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
+async function sendVote(signer: web3.Keypair, programId: web3.PublicKey, connection: web3.Connection) {
     let buffer = Buffer.alloc(1000)
     const electoral_card_number = 'EC8352'
     const first_name = 'Marco'
@@ -118,7 +103,7 @@ async function sendTestElection(signer: web3.Keypair, programId: web3.PublicKey,
     console.log(`https://explorer.solana.com/tx/${tx}?cluster=custom`)
 }
 
-function pausaPerSecondi(secondi: number): Promise<void> {
+function waitAirdropSol(secondi: number): Promise<void> {
     return new Promise((resolve) => {
       setTimeout(resolve, secondi * 1000);
     });
@@ -127,14 +112,14 @@ function pausaPerSecondi(secondi: number): Promise<void> {
 
 
 async function main() {
-    const signer = initializeSignerKeypair()
+    const signer =  web3.Keypair.generate()
     
     const connection = new web3.Connection("http://127.0.0.1:8899")
     await airdropSolIfNeeded(signer, connection)
 
-    await pausaPerSecondi(15)
-    const chainDemocracyProgramId = new web3.PublicKey('2eGsq3YuB43PRjk5b9SfiKvT2TzMnoYHES4ynjtyZgFb')          // ALDO
-    await sendTestElection(signer, chainDemocracyProgramId, connection)
+    await waitAirdropSol(15)
+    const chainDemocracyProgramId = new web3.PublicKey('9UWSBaRmDNnaFwKADFVpZMJMstoAYWZPFHA6ej93dYKm')          // ALDO
+    await sendVote(signer, chainDemocracyProgramId, connection)
 
 }
 
@@ -145,7 +130,3 @@ main().then(() => {
     console.log(error)
     process.exit(1)
 })
-
-
-
-
