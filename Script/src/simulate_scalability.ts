@@ -28,16 +28,7 @@ const {
   } = web3;
   
 
-const TOTAL_TRANSACTIONS = 3000; // Numero totale di transazioni da inviare
-
-async function airdropSolIfNeeded(signer: web3.Keypair, connection: web3.Connection) {
-    const balance = await connection.getBalance(signer.publicKey);
-    console.log('Current balance is', balance);
-    if (balance < web3.LAMPORTS_PER_SOL) {
-        console.log('Airdropping 1 SOL...');
-        await connection.requestAirdrop(signer.publicKey, web3.LAMPORTS_PER_SOL);
-    }
-}
+const TOTAL_TRANSACTIONS = 5000; // Numero totale di transazioni da inviare
 
 const electionInstructionLayout = borsh.struct([
     borsh.u8('variant'),
@@ -74,7 +65,7 @@ async function sendSingleVote(
     ) {
 
     let buffer = Buffer.alloc(1000);
-    const electoral_card_number = `AA${index}`;
+    const electoral_card_number = `FF${index}`;
     const first_name = firstName;
     const last_name = lastName;
     const election_name = 'Elettorale1';
@@ -144,21 +135,15 @@ async function sendVoteConcurrent(signer: web3.Keypair, programId: web3.PublicKe
     for (let i = 0; i < TOTAL_TRANSACTIONS; i++) {
         const randomName = selectRandomName();
 
-        promises.push(sendSingleVote(signer, programId, connection, i, pda_candidate_list,pda_election, randomName.firstName, randomName.lastName));
+        promises.push(sendSingleVote(signer, programId, connection, i, pda_candidate_list, pda_election, randomName.firstName, randomName.lastName));
     }
     await Promise.all(promises);
-}
-
-function pausaPerSecondi(secondi: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, secondi * 1000);
-  });
 }
 
 async function main() {
     const connection = new web3.Connection('http://127.0.0.1:8899');
     const signer = initializeSignerKeypair();
-    const chainDemocracyProgramId = new web3.PublicKey('9UWSBaRmDNnaFwKADFVpZMJMstoAYWZPFHA6ej93dYKm');
+    const chainDemocracyProgramId = new web3.PublicKey('DEVqjbNXCGwT2rjLCVk6qUtVVtyCn2yLE88ChNkRLiWZ');
 
     const election_name = 'Elettorale1';
     const seed = 'candidate-list';
@@ -173,7 +158,7 @@ async function main() {
         chainDemocracyProgramId
     )
     
-    await sendVoteConcurrent(signer, chainDemocracyProgramId, connection, pda_candidate_list,pda_election);
+    await sendVoteConcurrent(signer, chainDemocracyProgramId, connection, pda_candidate_list, pda_election);
 }
 
 main().then(() => {

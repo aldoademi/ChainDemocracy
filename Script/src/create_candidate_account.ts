@@ -112,7 +112,7 @@ async function main() {
 
     await waitAirdropSol(15)
     
-    const chainDemocracyProgramId = new web3.PublicKey('9UWSBaRmDNnaFwKADFVpZMJMstoAYWZPFHA6ej93dYKm')          // ALDO
+    const chainDemocracyProgramId = new web3.PublicKey('DEVqjbNXCGwT2rjLCVk6qUtVVtyCn2yLE88ChNkRLiWZ')          // ALDO
     await createCandidate(signer, chainDemocracyProgramId, connection, 'Matteo', 'Salvini')
     await createCandidate(signer, chainDemocracyProgramId, connection, 'Giuseppe', 'Conte')
     await createCandidate(signer, chainDemocracyProgramId, connection, 'Luigi', 'Di Maio')

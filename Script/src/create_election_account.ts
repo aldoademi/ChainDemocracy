@@ -4,21 +4,6 @@ import * as fs from 'fs'
 import dotenv from 'dotenv'
 dotenv.config()
 
-function initializeSignerKeypair(): web3.Keypair {
-    if (!process.env.PRIVATE_KEY) {
-        console.log('Creating .env file')
-        const signer = web3.Keypair.generate()
-        fs.writeFileSync('.env',`PRIVATE_KEY=[${signer.secretKey.toString()}]`)
-        return signer
-    }
-    
-    const secret = JSON.parse(process.env.PRIVATE_KEY ?? "") as number[]
-    const secretKey = Uint8Array.from(secret)
-    const keypairFromSecretKey = web3.Keypair.fromSecretKey(secretKey)
-    console.log('Signer public key:', keypairFromSecretKey.publicKey.toBase58())
-    return keypairFromSecretKey
-}
-
 async function airdropSolIfNeeded(signer: web3.Keypair, connection: web3.Connection) {
     const balance = await connection.getBalance(signer.publicKey)
     console.log('Current balance is', balance)
@@ -120,7 +105,7 @@ function waitAirdropSol(secondi: number): Promise<void> {
 
 async function main() {
     const signer =  web3.Keypair.generate()
-    const chainDemocracyProgramId = new web3.PublicKey('9UWSBaRmDNnaFwKADFVpZMJMstoAYWZPFHA6ej93dYKm')          // ALDO
+    const chainDemocracyProgramId = new web3.PublicKey('DEVqjbNXCGwT2rjLCVk6qUtVVtyCn2yLE88ChNkRLiWZ')          // ALDO
     const connection = new web3.Connection("http://127.0.0.1:8899")
     await airdropSolIfNeeded(signer, connection)
 

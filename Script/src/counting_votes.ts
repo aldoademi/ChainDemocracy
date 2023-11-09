@@ -110,7 +110,7 @@ async function main() {
 
     await waitAirdropSol(20)
     
-    const chainDemocracyProgramId = new web3.PublicKey('9UWSBaRmDNnaFwKADFVpZMJMstoAYWZPFHA6ej93dYKm')
+    const chainDemocracyProgramId = new web3.PublicKey('DEVqjbNXCGwT2rjLCVk6qUtVVtyCn2yLE88ChNkRLiWZ')
     await sendCountingVote(signer, chainDemocracyProgramId, connection)
 }
 
